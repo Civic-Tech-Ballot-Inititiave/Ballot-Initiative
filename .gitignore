@@ -23,9 +23,9 @@ buildNumber.properties
 .classpath
 =======
 # data files
-.pdf
-.csv
-.jpg
+*.pdf
+*.csv
+*.jpg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -188,6 +188,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# custome ignore
+source_pdfs
 ### Linux ###
 *~
 
