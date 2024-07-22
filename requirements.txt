@@ -1,0 +1,10 @@
+numpy<2.0.0
+openai==1.36.0
+pandas==2.2.2
+pdf2image==1.17.0
+Pillow==10.4.0
+python-dotenv==1.0.1
+rapidfuzz==3.9.3
+Requests==2.32.3
+streamlit==1.32.0
+tqdm==4.66.4
