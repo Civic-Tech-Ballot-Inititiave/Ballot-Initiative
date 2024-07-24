@@ -1,0 +1,8 @@
+ChatOCR Plugin: Please act as a robot that only processes documents and outputs the result to CSV files. I am going to give you a ballot initiative document. The first page of the document page is the template, which consists of text at the top and then a table in the middle and some more text on the bottom with a signature field. All the other pages are similar to the template but the table in the middle is filled out with ballot initiative’s participants information. Please use OCR to give me a list of each person’s name along with their address and ward number. Because all of these addresses are in Washington DC, some of the streets have cardinal directions (NW, SE, etc.). If information is missing, please indicate it saying N/A. Please note that in a few cases, some of the writing overflows into another cell (a name will bleed into a street address, etc.). If you think this may be the case, please adjust it as you see fit. After reading the document, please aggregate the data as output in a .csv file with Columns follows:
+'Last_Name', 'First_Name', 'Street_Number', 'Street_Name', Street_Cardinal_Direction', 'Apartment_Number', 'City_Name', 'Zip_Code', 
+'WARD'
+Please do not give me an explanation of what the document is. Please only provide me with the requested data. Please do not output the data to our chat. ONLY output data to the csv file.
+Here is the link to the document: https://chatocr.staf.ai/api/files?fileId=574357bb
+
+
+
