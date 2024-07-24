@@ -1,9 +1,6 @@
 from typing import List
 import re
-
-"""
-
-"""
+from rapidfuzz import fuzz
 
 def valid_address(address: str) -> bool:
     """
@@ -27,9 +24,30 @@ def valid_address(address: str) -> bool:
     return True
     """
 
-def score_address_fuzz(address: str, full_address_list: List[str]) -> float:
+def score_function_fuzz(field: str, full_field_list: List[str], is_address: bool = False) -> float:
     """
-    as an example, see score_function_fuzz() in https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/full_pipeline.ipynb
+    abstraction of score_function_fuzz() in https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/trash_files/full_pipeline.ipynb
     """
-    assert valid_address(address)
-    return 0.0
+    if is_address:
+        assert valid_address(field)
+    full_field_score_dict = dict()
+    for idx in range(len(full_field_list)):
+
+        # getting full field for row
+        field_row = str(full_field_list[idx])
+
+        # lowering strings    
+        field_row = field_row.lower() 
+        guess_full_field = guess_full_field.lower()
+    
+        # compiling scores
+        final_score = fuzz.ratio(guess_full_field, field_row)/100
+        full_field_score_dict[idx] = final_score
+
+    # sorting dictionary
+    sorted_dictionary = dict(sorted(full_field_score_dict.items(), reverse=True, key=lambda item: item[1]))
+
+    # top five key value pairs (indices and scores)
+    indices_scores_list = list(sorted_dictionary.items())[:5]
+
+    return indices_scores_list
