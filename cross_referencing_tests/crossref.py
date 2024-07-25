@@ -19,9 +19,12 @@ CRITICAL_COLS = ['Last_Name', 'First_Name', 'Street_Number',
        'Apartment_Number', 'WARD']
 
 def get_matches(scanned_filename: str, registry_filename: str) -> pd.DataFrame:
+    import pdb
     FULL_NAME = 'full_name'
     FULL_ADDRESS_NO_APT = 'full_address_no_apt'
-    voter_registry = pd.read_csv(registry_filename, usecols=CRITICAL_COLS[:6], keep_default_na=False) #, nrows=100)
+    relevant_cols = ['Last_Name', 'First_Name', 'Middle_Name', 'Name_Style', 'Street_Number', 'Street_Name', 'Street_Type', 'Street_Dir_Suffix', 'Unit_Type', 'Apartment_Number', 'City_Name', 'Zip_Code']
+    voter_registry = pd.read_csv(registry_filename, usecols=relevant_cols, keep_default_na=False) #, nrows=100)
+    pdb.set_trace()
     ocr_df = pd.read_csv(scanned_filename) #, usecols=CRITICAL_COLS[:5])
     ocr_df = ocr_df.rename(columns={'Street_Cardinal_Direction': 'Street_Dir_Suffix'})
     
@@ -85,4 +88,4 @@ def get_matches(scanned_filename: str, registry_filename: str) -> pd.DataFrame:
 #       non_matches = df_fullname_match[df_fullname_match['Last_Name_x'].isna()]
 
 print(get_matches("../Aggregated Data/output.csv",
-                  "./voter_registries/raw_feb_23_city_wide.csv"))
+                  "../data/raw_feb_23_city_wide.csv"))

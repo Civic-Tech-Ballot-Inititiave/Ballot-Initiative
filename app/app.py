@@ -5,6 +5,7 @@ from rapidfuzz import fuzz
 import time
 import os
 import json
+from fuzzy_match_helper import score_function_fuzz
 
 from pdf2image import convert_from_bytes
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ from openai import OpenAI
 
 # loading environmental variables
 load_dotenv('.env', override=True)
+SCORE_CUTOFF = 0.80
 
 # define your open AI API key here; Remember this is a personal notebook! Don't push your API key to the remote repo
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -82,41 +84,6 @@ def extract_signature_info(image_path):
     return signator_list
 
 ##
-# FUZZY MATCHING FUNCTION
-##
-
-def score_function_fuzz(ocr_name, full_name_list):
-
-    """
-    Outputs the voter record indices of the names that are 
-    closest to `ocr_name`.
-    """
-
-    # empty dictionary of scores 
-    full_name_score_dict = dict()
-
-    for idx in range(len(full_name_list)):
-
-        # getting full name for row; ensuring string
-        name_row = str(full_name_list[idx])
-
-        # converting string to lower case to simplify matching  
-        name_row = name_row.lower()
-        ocr_name = ocr_name.lower()
-    
-        # compiling scores; writing as between 0 and 1
-        full_name_score_dict[idx] = fuzz.ratio(ocr_name, name_row)/100
-
-    # sorting dictionary
-    sorted_dictionary = dict(sorted(full_name_score_dict.items(), reverse=True, key=lambda item: item[1]))
-
-    # top five key value pairs (indices and scores)
-    indices_scores_list = list(sorted_dictionary.items())[:5]
-
-    return indices_scores_list
-
-
-##
 # DATA UPLOAD AND FULL NAME GENERATION
 ##
 
@@ -125,6 +92,14 @@ voter_records_2023_df = pd.read_csv('data/raw_feb_23_city_wide.csv', dtype=str)
 
 # creating full name column
 voter_records_2023_df['Full Name'] = voter_records_2023_df.apply(lambda x: f"{x['First_Name']} {x['Last_Name']}", axis=1)
+voter_records_2023_df['Full Address'] = voter_records_2023_df.apply(lambda x: " ".join([
+    x['Street_Number'],
+    x['Street_Name'].upper(),
+    x['Street_Type'].upper(),
+    'Washington, DC',
+    x['Zip_Code']
+]))
+full_address_list = list(voter_records_2023_df['Full Address'])
 full_name_list = list(voter_records_2023_df['Full Name'])
 
 
@@ -214,14 +189,20 @@ if images:
             
             for dict_ in resulting_data:
                 temp_dict = dict()
-                high_match_ids = score_function_fuzz(dict_['Name'], full_name_list)    
-                id_, score_ = high_match_ids[0]
+                high_match_ids_by_name = score_function_fuzz(dict_['Name'], full_name_list)
+                id_, score_by_name = high_match_ids_by_name[0]
+                
+                high_match_ids_by_address = score_function_fuzz(dict_['Address'], full_address_list)
+                id_address, score_by_address = high_match_ids_by_address[0]
+                combined_score = score_by_name * score_by_address
+
                 temp_dict['OCR NAME'] = str(dict_['Name'])
                 temp_dict['MATCHED NAME'] = full_name_list[id_]
-                temp_dict['SCORE'] = score_
-                temp_dict['VALID'] = False
-                if score_ > 0.85: 
-                    temp_dict['VALID'] = True
+
+                temp_dict['OCR ADDRESS'] = str(dict_['Address'])
+                temp_dict['MATCHED ADDRESS'] = full_address_list[id_address]
+                temp_dict['SCORE'] = combined_score
+                temp_dict['VALID'] = combined_score >= SCORE_CUTOFF
                 matched_list.append(temp_dict)
 
             matching_bar.progress((i+1)/len(images), text=f"Matching OCR Names - page {i+1} of {len(images)}")
