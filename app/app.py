@@ -210,7 +210,8 @@ if images:
                 str_i = str(i)
             filename = f"page-{str_i}.jpg"
             resulting_data = extract_signature_info(filename)    
-            
+
+######### fuzzy matching             
             
             for dict_ in resulting_data:
                 temp_dict = dict()
@@ -227,7 +228,7 @@ if images:
             matching_bar.progress((i+1)/len(images), text=f"Matching OCR Names - page {i+1} of {len(images)}")
 
         ## Editable Table
-        add_df = pd.DataFrame(matched_list, columns=["OCR NAME", "MATCHED NAME", "SCORE", "VALID"])
+        add_ssdf = pd.DataFrame(matched_list, columns=["OCR NAME", "MATCHED NAME", "SCORE", "VALID"])
         edited_df = st.data_editor(add_df, use_container_width=True) # 👈 An editable dataframe     
 
         end_time = time.time()
