@@ -1,3 +1,4 @@
+from math import sqrt
 import streamlit as st
 import pandas as pd
 import base64
@@ -194,7 +195,7 @@ if images:
                 
                 high_match_ids_by_address = score_function_fuzz(dict_['Address'], full_address_list)
                 id_address, score_by_address = high_match_ids_by_address[0]
-                combined_score = score_by_name * score_by_address
+                combined_score = sqrt(score_by_name * score_by_address)
 
                 temp_dict['OCR NAME'] = str(dict_['Name'])
                 temp_dict['MATCHED NAME'] = full_name_list[id_]
