@@ -31,6 +31,7 @@ def score_fuzzy_match_refactor(query_name, names_list):
     # there is no processor used by default but it does mostly what we've been using in the project so far, removes whitespace, lowers all letters, removes any non-alphanumeric characters
     # by limiting to 5 we can save a little bit of space and time and code, since we were looping through all of the items before and only taking the top 5 of the sorted list.
     list_of_match_tuples = process.extract(query=query_name, choices=names_list, scorer=fuzz.ratio, processor=utils.default_process, limit=5)
+    
     # this will produce a list of tuples whose values are as follows:
     # (matched record: the record which the query matched*,
     # score: the result of fuzz.ratio between the query and the matched record,
