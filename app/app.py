@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
-from rapidfuzz import fuzz
+from rapidfuzz import fuzz, process, utils
 import time
 import os
 import json
@@ -115,6 +115,20 @@ def score_function_fuzz(ocr_name, full_name_list):
 
     return indices_scores_list
 
+def score_fuzzy_match_refactor(query_name, names_list):
+    # the default scorer produces a Levenshtein distance number, so we can use fuzz.ratio as a scorer to obtain the same format we've been getting for data so far
+    # there is no processor used by default but it does mostly what we've been using in the project so far, removes whitespace, lowers all letters, removes any non-alphanumeric characters
+    # by limiting to 5 we can save a little bit of space and time and code, since we were looping through all of the items before and only taking the top 5 of the sorted list.
+    list_of_match_tuples = process.extract(query=query_name, choices=names_list, scorer=fuzz.ratio, processor=utils.default_process, limit=5)
+    # this will produce a list of tuples whose values are as follows:
+    # (matched record: the record which the query matched*,
+    # score: the result of fuzz.ratio between the query and the matched record,
+    # index: when checked against an iterable i.e standard python list, this will be an index, when checked against a panda dataframe, it will return a key)
+    # my recommendation is to keep this format and refactor the functions which accept this list as an argument to simply access the correct index of the new tuple format.
+    # however, it is no problem to reformat them to the original format with a simple loop:
+    indices_scores_list = list((match[2], match[1]) for match in list_of_match_tuples)
+    return indices_scores_list
+
 
 ##
 # DATA UPLOAD AND FULL NAME GENERATION
@@ -210,13 +224,12 @@ if images:
                 str_i = str(i)
             filename = f"page-{str_i}.jpg"
             resulting_data = extract_signature_info(filename)    
-
-######### fuzzy matching             
             
             for dict_ in resulting_data:
                 temp_dict = dict()
-                high_match_ids = score_function_fuzz(dict_['Name'], full_name_list)    
-                id_, score_ = high_match_ids[0]
+                # high_match_ids = score_function_fuzz(dict_['Name'], full_name_list)    
+                high_match_ids = score_fuzzy_match_refactor(dict_['Name'], full_name_list)
+                name_, score_, id_ = high_match_ids[0]
                 temp_dict['OCR NAME'] = str(dict_['Name'])
                 temp_dict['MATCHED NAME'] = full_name_list[id_]
                 temp_dict['SCORE'] = score_
