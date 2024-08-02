@@ -189,10 +189,10 @@ if images:
                 high_match_ids = score_fuzzy_match_slim(dict_['Name'], full_name_list)
                 name_, score_, id_ = high_match_ids[0]
                 temp_dict['OCR NAME'] = str(dict_['Name'])
-                temp_dict['MATCHED NAME'] = full_name_list[id_]
+                temp_dict['MATCHED NAME'] = name_
                 temp_dict['SCORE'] = score_
                 temp_dict['VALID'] = False
-                if score_ > 0.85:
+                if score_ > 85.0:
                     temp_dict['VALID'] = True
                 matched_list.append(temp_dict)
 
