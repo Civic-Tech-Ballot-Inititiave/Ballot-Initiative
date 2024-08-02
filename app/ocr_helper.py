@@ -1,13 +1,13 @@
 import base64
 import requests
-import pprint 
+import pprint
 
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
 
-load_dotenv() 
+load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # starting Open AI client
@@ -32,7 +32,7 @@ def extract_signature_info(image_path, verbose = False):
     }
 
     payload = {
-        "model": "gpt-4-vision-preview",
+        "model": "gpt-4o",
         "messages": [
           {
             "role": "user",
@@ -58,12 +58,12 @@ def extract_signature_info(image_path, verbose = False):
 
     if verbose:
         # Testing output response
-        print(response.json())    
+        print(response.json())
 
     # Testing the output response
     cleaned_output = response.json()['choices'][0]['message']['content'].replace('\n', '')
 
     # defining signator_list
     signator_list = list(eval(cleaned_output))
-    
+
     return signator_list
