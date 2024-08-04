@@ -5,6 +5,7 @@ from rapidfuzz import fuzz, process, utils
 import time
 import os
 import json
+import glob
 
 from pdf2image import convert_from_bytes
 from dotenv import load_dotenv
@@ -90,6 +91,25 @@ def score_fuzzy_match_slim(ocr_name, full_name_list):
     return list_of_match_tuples
 
 ##
+# DELETE TEMPORARY FILES
+##
+
+def wipe_temp_dir_status_bar(remove_status_bar, _length):
+    index = 0
+    pattern = os.path.join('.', 'temp_ocr_images', '*')
+    temp_files = glob.glob(pattern)
+    for file in temp_files:
+        os.remove(file)
+        remove_status_bar.progress((index+1)/_length, text="Temporary Image Files Removed")
+        index += 1
+
+def wipe_temp_dir():
+    pattern = os.path.join('.', 'temp_ocr_images', '*')
+    temp_files = glob.glob(pattern)
+    for file in temp_files:
+        os.remove(file)
+
+##
 # DATA UPLOAD AND FULL NAME GENERATION
 ##
 
@@ -113,18 +133,18 @@ with st.sidebar:
 ## File Upload
 ## need to run streamlit run main_app/app.py --server.enableXsrfProtection false
 ## (From https://discuss.streamlit.io/t/file-upload-error-axioserror-request-failed-with-status-code-500/48169/19?u=mobolaji)
-uploaded_file = st.file_uploader("Choose a file")
+uploaded_ballots = st.file_uploader("Choose a file")
 
 images = None
-if uploaded_file is not None:
+if uploaded_ballots is not None:
     start_time = time.time()
     with st.status("Downloading data...", expanded=True) as status:
         st.write("Saving PDF File")
-        with open('temp_file.pdf', 'wb') as f:
-            f.write(uploaded_file.getvalue())
+        with open('temp_ocr_images/temp_file.pdf', 'wb') as f:
+            f.write(uploaded_ballots.getvalue())
 
         st.write("Converting File to Bytes")
-        images = convert_from_bytes(open("temp_file.pdf", "rb").read())
+        images = convert_from_bytes(open("temp_ocr_images/temp_file.pdf", "rb").read())
 
         my_bar = st.progress(0, text="Downloading Image Data")
         for i in range(len(images)):
@@ -132,7 +152,7 @@ if uploaded_file is not None:
                 str_i = '0'+str(i)
             else:
                 str_i = str(i)
-            images[i].save(f"page-{str_i}.jpg")
+            images[i].save(f"temp_ocr_images/page-{str_i}.jpg")
 
             my_bar.progress((i+1)/len(images), text=f"Downloading Image Data - page {i+1} of {len(images)}")
 
@@ -155,16 +175,8 @@ with st.sidebar:
 
             with st.status("Removing Data...", expanded=True) as status:
                 removal_bar = st.progress(0, text="Removing Image Files")
-                os.remove("temp_file.pdf")
-                for i in range(len(images)):
-                    if i<10:
-                        str_i = '0'+str(i)
-                    else:
-                        str_i = str(i)
-                    os.remove(f"page-{str_i}.jpg")
-
-                    removal_bar.progress((i+1)/len(images), text="Temporary Image Files Removed")
-
+                ### adding 1 to account for temp_ocr_images/temp_file.pdf as well as all jpgs
+                wipe_temp_dir_status_bar(removal_bar, len(images) + 1)
                 status.update(label="Removal Complete!", state="complete", expanded=False)
 
 ##
@@ -176,13 +188,16 @@ if images:
         matched_list = list()
 
         start_time = time.time()
-        for i in range(len(images)):
-            if i<10:
-                str_i = '0'+str(i)
-            else:
-                str_i = str(i)
-            filename = f"page-{str_i}.jpg"
-            resulting_data = extract_signature_info(filename)
+        pattern = os.path.join('.', 'temp_ocr_images', "*jpg")
+        jpg_files = glob.glob(pattern)
+        for jpg in jpg_files:
+            resulting_data = extract_signature_info(jpg)
+
+            # comment in to create .json file for testing without having to call the API
+            # processed_data_file_path = os.path.join('.', 'data', "processed_ocr_data.json")
+
+            # with open(processed_data_file_path, 'w') as file:
+            #     json.dump(resulting_data, file, indent=4)
 
             for dict_ in resulting_data:
                 temp_dict = dict()
@@ -206,3 +221,6 @@ if images:
 
         st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
         st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
+
+        ## empty temp_ocr_images directory
+        # wipe_temp_dir()

@@ -1,0 +1,32 @@
+[
+    {
+        "Name": "James Hatch",
+        "Address": "1001 Harry Thomas Way NE Apt 634",
+        "Date": "1/18/22",
+        "Ward": "5"
+    },
+    {
+        "Name": "Lynn Ly",
+        "Address": "1212 11th St NW #703",
+        "Date": "1/18/22",
+        "Ward": "2"
+    },
+    {
+        "Name": "Bikwe Mwamba",
+        "Address": "1514 14th St NW #578",
+        "Date": "1/18/22",
+        "Ward": "6"
+    },
+    {
+        "Name": "Muling Liu",
+        "Address": "22 M St NE #611",
+        "Date": "1/18/22",
+        "Ward": "6"
+    },
+    {
+        "Name": "Alexandra Karabatsos",
+        "Address": "1300 K St SW Apt 302",
+        "Date": "4/1/22",
+        "Ward": "6"
+    }
+]
