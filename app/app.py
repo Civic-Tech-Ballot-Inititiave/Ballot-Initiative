@@ -219,6 +219,7 @@ if images:
         matching_bar = st.progress(0, text="Performing Name Match")
         matched_list = list()
         start_time = time.time()
+        i = 0
         pattern = os.path.join('.', 'temp_ocr_images', "*jpg")
         jpg_files = glob.glob(pattern)
         i = 0
