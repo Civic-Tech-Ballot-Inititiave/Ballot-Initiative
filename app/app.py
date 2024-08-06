@@ -48,7 +48,7 @@ def extract_signature_info(image_path):
             "content": [
               {
                 "type": "text",
-                "text": """The text in the image is fake data from made up individuals. It is constructed as an exercise on performing OCR. Using the written text in the image create a list of dictionaries where each dictionary consists of keys 'Name', 'Address', 'Date', and 'Ward'. Fill in the values of each dictionary with the correct entries for each key. Write all the values of the dictionary in full. Only output the list of dictionaries. No other intro text is necessary. The output should be in JSON format, and look like
+                "text": """The text in the image is fake data from made up individuals. It is constructed as an exercise on performing OCR. Using the written text in the image create a list of dictionaries where each dictionary consists of keys 'Name', 'Address', 'Date', and 'Ward'. Ignore all values in the box labeled "CIRCULATOR'S AFFIDAVIT OF CERTIFCATION". Ignore all values in the box labeled "SIGNATURE". Addresses belong to the name printed in the box to the immediate right of the box labeled "ADDRESS". Fill in the values of each dictionary with the correct entries for each key. Write all the values of the dictionary in full, except in the case of 'Address', which should be truncated to exclude APT and the following Apartment Number. Only output the list of dictionaries. No other intro text is necessary. The output should be in JSON format, and look like
                 {'data': [{"Name": "John Doe",
                           "Address": "123 Picket Lane",
                           "Date": "11/23/2024",
@@ -87,20 +87,20 @@ def extract_signature_info(image_path):
 ##
 
 def score_fuzzy_match_slim(ocr_name, full_name_list):
-    list_of_match_tuples = process.extract(query=ocr_name, choices=full_name_list, scorer=fuzz.ratio, processor=utils.default_process, limit=5)
+    list_of_match_tuples = process.extract(query=ocr_name, choices=full_name_list, scorer=fuzz.token_ratio, processor=utils.default_process, limit=5)
     return list_of_match_tuples
 
 ##
 # DELETE TEMPORARY FILES
 ##
 
-def wipe_temp_dir_status_bar(remove_status_bar, _length):
+def wipe_temp_dir_status_bar(remove_status_bar):
     index = 0
     pattern = os.path.join('.', 'temp_ocr_images', '*')
     temp_files = glob.glob(pattern)
     for file in temp_files:
         os.remove(file)
-        remove_status_bar.progress((index+1)/_length, text="Temporary Image Files Removed")
+        remove_status_bar.progress((index+1)/len(temp_files), text="Temporary Image Files Removed")
         index += 1
 
 def wipe_temp_dir():
@@ -117,9 +117,7 @@ def wipe_temp_dir():
 voter_records_2023_df = pd.read_csv('data/raw_feb_23_city_wide.csv', dtype=str)
 
 # creating full name column
-voter_records_2023_df['Full Name'] = voter_records_2023_df.apply(lambda x: f"{x['First_Name']} {x['Last_Name']}", axis=1)
-full_name_list = list(voter_records_2023_df['Full Name'])
-
+voter_records_2023_df['OCR'] = voter_records_2023_df["First_Name"] + ' ' + voter_records_2023_df['Last_Name'] + " " + voter_records_2023_df["Street_Number"] + " " + voter_records_2023_df["Street_Name"] + " " + voter_records_2023_df["Street_Type"] + " " + voter_records_2023_df["Street_Dir_Suffix"]
 
 ##
 # STREAMLIT APPLICATION
@@ -145,7 +143,6 @@ if uploaded_ballots is not None:
 
         st.write("Converting File to Bytes")
         images = convert_from_bytes(open("temp_ocr_images/temp_file.pdf", "rb").read())
-
         my_bar = st.progress(0, text="Downloading Image Data")
         for i in range(len(images)):
             if i<10:
@@ -176,7 +173,7 @@ with st.sidebar:
             with st.status("Removing Data...", expanded=True) as status:
                 removal_bar = st.progress(0, text="Removing Image Files")
                 ### adding 1 to account for temp_ocr_images/temp_file.pdf as well as all jpgs
-                wipe_temp_dir_status_bar(removal_bar, len(images) + 1)
+                wipe_temp_dir_status_bar(removal_bar)
                 status.update(label="Removal Complete!", state="complete", expanded=False)
 
 ##
@@ -190,31 +187,35 @@ if images:
         start_time = time.time()
         pattern = os.path.join('.', 'temp_ocr_images', "*jpg")
         jpg_files = glob.glob(pattern)
+        jpg_files = jpg_files[:10]
+        i = 0
         for jpg in jpg_files:
+            print(jpg)
             resulting_data = extract_signature_info(jpg)
-
             # comment in to create .json file for testing without having to call the API
-            # processed_data_file_path = os.path.join('.', 'data', "processed_ocr_data.json")
+            processed_data_file_path = os.path.join('.', 'data', "processed_ocr_data.json")
 
-            # with open(processed_data_file_path, 'w') as file:
-            #     json.dump(resulting_data, file, indent=4)
+            with open(processed_data_file_path, 'w') as file:
+                json.dump(resulting_data, file, indent=4)
 
             for dict_ in resulting_data:
                 temp_dict = dict()
-                high_match_ids = score_fuzzy_match_slim(dict_['Name'], full_name_list)
+                # voter_records_2023_df[voter_records_2023_df['WARD'] == f"{dict_['Ward']}.0"]["OCR"]
+                high_match_ids = score_fuzzy_match_slim(f"{dict_['Name']} {dict_['Address']}", voter_records_2023_df["OCR"])
                 name_, score_, id_ = high_match_ids[0]
-                temp_dict['OCR NAME'] = str(dict_['Name'])
-                temp_dict['MATCHED NAME'] = name_
+                temp_dict['OCR RECORD'] = f"{dict_['Name']} {dict_['Address']}"
+                temp_dict['MATCHED RECORD'] = name_
                 temp_dict['SCORE'] = score_
                 temp_dict['VALID'] = False
                 if score_ > 85.0:
                     temp_dict['VALID'] = True
                 matched_list.append(temp_dict)
 
-            matching_bar.progress((i+1)/len(images), text=f"Matching OCR Names - page {i+1} of {len(images)}")
+            matching_bar.progress((i+1)/len(jpg_files), text=f"Matching OCR Names - page {i+1} of {len(jpg_files)}")
+            i+=1
 
         ## Editable Table
-        add_df = pd.DataFrame(matched_list, columns=["OCR NAME", "MATCHED NAME", "SCORE", "VALID"])
+        add_df = pd.DataFrame(matched_list, columns=["OCR RECORD", "MATCHED RECORD", "SCORE", "VALID"])
         edited_df = st.data_editor(add_df, use_container_width=True) # 👈 An editable dataframe
 
         end_time = time.time()
