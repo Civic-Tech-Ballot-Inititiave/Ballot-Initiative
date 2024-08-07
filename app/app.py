@@ -86,9 +86,37 @@ def extract_signature_info(image_path):
 # FUZZY MATCHING FUNCTION
 ##
 
-def score_fuzzy_match_slim(ocr_name, full_name_list):
-    list_of_match_tuples = process.extract(query=ocr_name, choices=full_name_list, scorer=fuzz.token_ratio, processor=utils.default_process, limit=5)
+def score_fuzzy_match_slim(ocr_name, full_name_list, scorer_=fuzz.token_ratio, limit_=1):
+    list_of_match_tuples = process.extract(query=ocr_name, choices=full_name_list, scorer=scorer_, processor=utils.default_process, limit=limit_)
     return list_of_match_tuples
+
+
+##
+# TIERED SEARCH
+##
+
+def tiered_search(name, address):
+    name_address_combo = f"{name} {address}"
+    # Searches for a match within the Ward returned by OCR
+    high_match_ids = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df[voter_records_2023_df['WARD'] == f"{dict_['Ward']}.0"]["OCR"])
+    name_, score_, id_ = high_match_ids[0]
+    # If no Valid matches are found, searches for a match against the entire registry
+    if score_ < 85.0:
+        high_match_ids = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df["OCR"])
+        name_, score_, id_ = high_match_ids[0]
+    if score_ >= 85.0:
+        return high_match_ids[0]
+    # IF no Valid matches have been found, searches for a match using only the Full Name
+    else:
+        matched_full_names = score_fuzzy_match_slim(name, voter_records_2023_df["Full Name"], scorer_=fuzz.ratio)
+        full_name, full_name_score, full_name_id = matched_full_names[0]
+    # Compare scores of full name + address match to score of Full Name match and take the record with the highest score in the format Tuple(matched_record, score, index)
+    if score_ > full_name_score:
+        return high_match_ids[0]
+    else:
+        address = voter_records_2023_df.loc[full_name_id, 'Full Address']
+        full_name = f"{full_name} {address}"
+        return (full_name, full_name_score, full_name_id)
 
 ##
 # DELETE TEMPORARY FILES
@@ -117,8 +145,9 @@ def wipe_temp_dir():
 voter_records_2023_df = pd.read_csv('data/raw_feb_23_city_wide.csv', dtype=str)
 
 # creating full name column
-voter_records_2023_df['OCR'] = voter_records_2023_df["First_Name"] + ' ' + voter_records_2023_df['Last_Name'] + " " + voter_records_2023_df["Street_Number"] + " " + voter_records_2023_df["Street_Name"] + " " + voter_records_2023_df["Street_Type"] + " " + voter_records_2023_df["Street_Dir_Suffix"]
-
+voter_records_2023_df['Full Name'] = voter_records_2023_df["First_Name"] + ' ' + voter_records_2023_df['Last_Name']
+voter_records_2023_df['Full Address'] =  voter_records_2023_df["Street_Number"] + " " + voter_records_2023_df["Street_Name"] + " " + voter_records_2023_df["Street_Type"] + " " + voter_records_2023_df["Street_Dir_Suffix"]
+voter_records_2023_df['OCR'] = voter_records_2023_df["Full Name"] + ' ' + voter_records_2023_df["Full Address"]
 ##
 # STREAMLIT APPLICATION
 ##
@@ -179,30 +208,23 @@ with st.sidebar:
 ##
 # Cross checking database
 ##
+# With Chat GPT API
+add_df = pd.DataFrame()
+
 if images:
     if st.button("Perform Database Cross Check"):
         matching_bar = st.progress(0, text="Performing Name Match")
         matched_list = list()
-
         start_time = time.time()
+        i = 0
         pattern = os.path.join('.', 'temp_ocr_images', "*jpg")
         jpg_files = glob.glob(pattern)
-        jpg_files = jpg_files[:10]
         i = 0
         for jpg in jpg_files:
-            print(jpg)
             resulting_data = extract_signature_info(jpg)
-            # comment in to create .json file for testing without having to call the API
-            processed_data_file_path = os.path.join('.', 'data', "processed_ocr_data.json")
-
-            with open(processed_data_file_path, 'w') as file:
-                json.dump(resulting_data, file, indent=4)
-
             for dict_ in resulting_data:
                 temp_dict = dict()
-                # voter_records_2023_df[voter_records_2023_df['WARD'] == f"{dict_['Ward']}.0"]["OCR"]
-                high_match_ids = score_fuzzy_match_slim(f"{dict_['Name']} {dict_['Address']}", voter_records_2023_df["OCR"])
-                name_, score_, id_ = high_match_ids[0]
+                name_, score_, id_ = tiered_search(dict_['Name'], dict_['Address'])
                 temp_dict['OCR RECORD'] = f"{dict_['Name']} {dict_['Address']}"
                 temp_dict['MATCHED RECORD'] = name_
                 temp_dict['SCORE'] = score_
@@ -223,5 +245,41 @@ if images:
         st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
         st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
 
+# With Preprocessed Data
+if st.button("Test Cross Check with Preprocessed OCR Data"):
+        matching_bar = st.progress(0, text="Performing Name Match")
+        matched_list = list()
+        start_time = time.time()
+        i = 0
+
+        with open('data/processed_ocr_data.json', 'r') as file:
+            resulting_data = json.load(file)
+
+        for dict_ in resulting_data:
+            temp_dict = dict()
+            name_, score_, id_ = tiered_search(dict_['Name'], dict_['Address'])
+            temp_dict['OCR RECORD'] = f"{dict_['Name']} {dict_['Address']}"
+            temp_dict['MATCHED RECORD'] = name_
+            temp_dict['SCORE'] = score_
+            temp_dict['VALID'] = False
+            if score_ > 85.0:
+                temp_dict['VALID'] = True
+            matched_list.append(temp_dict)
+            matching_bar.progress((i+1)/len(resulting_data), text=f"Matching OCR Names - page {i+1} of {len(resulting_data)}")
+            i+=1
+
+        ## Editable Table
+        add_df = pd.DataFrame(matched_list, columns=["OCR RECORD", "MATCHED RECORD", "SCORE", "VALID"])
+        edited_df = st.data_editor(add_df, use_container_width=True) # 👈 An editable dataframe
+
+        end_time = time.time()
+
+        st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
+        st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
+
+if st.button("Clear Data Table"):
+    if not add_df.empty:
+        add_df = pd.DataFrame()
+        images = None
         ## empty temp_ocr_images directory
-        # wipe_temp_dir()
+        wipe_temp_dir()
