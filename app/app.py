@@ -102,10 +102,11 @@ def tiered_search(name, address):
     # Searches for a match within the Ward returned by OCR
     high_match_ids = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df[voter_records_2023_df['WARD'] == f"{dict_['Ward']}.0"]["OCR"])
     name_, score_, id_ = high_match_ids[0]
-    # If no Valid matches are found, searches for a match against the entire registry
+    # If no Valid matches are found, searches for a match against the entire registry except the ward already checked
     if score_ < 85.0:
-        high_match_ids = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df["OCR"])
-        name_, score_, id_ = high_match_ids[0]
+        high_match_ids = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df[voter_records_2023_df['WARD'] != f"{dict_['Ward']}.0"]["OCR"])
+        if score_ < high_match_ids[0][1]:
+            name_, score_, id_ = high_match_ids[0]
     if score_ >= 85.0:
         return high_match_ids[0]
     # IF no Valid matches have been found, searches for a match using only the Full Name
