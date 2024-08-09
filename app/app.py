@@ -6,12 +6,14 @@ import time
 import os
 import json
 import glob
+from loguru import logger
 
 from pdf2image import convert_from_bytes
 from dotenv import load_dotenv
 from openai import OpenAI
 
-
+# setting up logger for benchmarking
+logger.add("data/logs/benchmark_logs.log", rotation="10 MB", level="INFO")
 
 # loading environmental variables
 load_dotenv('.env', override=True)
@@ -136,7 +138,6 @@ def wipe_temp_dir():
     temp_files = glob.glob(pattern)
     for file in temp_files:
         os.remove(file)
-
 ##
 # DATA UPLOAD AND FULL NAME GENERATION
 ##
@@ -186,6 +187,7 @@ if uploaded_ballots is not None:
     end_time = time.time()
 
     st.write(f'Download Time: {end_time-start_time:.3f} secs')
+    logger.info(f"PDF Download & Parse Time: {end_time-start_time:3f}")
 
 # reducing images length for testing purposes
 if images:
@@ -198,7 +200,6 @@ with st.sidebar:
     progress_removal_text = "Removal in progress. Please wait."
     if images:
         if st.button("Remove Temporary Files"):
-
             with st.status("Removing Data...", expanded=True) as status:
                 removal_bar = st.progress(0, text="Removing Image Files")
                 ### adding 1 to account for temp_ocr_images/temp_file.pdf as well as all jpgs
@@ -241,9 +242,11 @@ if images:
         edited_df = st.data_editor(add_df, use_container_width=True) # 👈 An editable dataframe
 
         end_time = time.time()
-
+        total_records = len(add_df)
+        valid_matches = add_df["VALID"].sum()
         st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
         st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
+        logger.info(f"OCR and Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_matches} of {total_records} - {valid_matches/total_records * 100:2f}%")
 
 # With Preprocessed Data
 if st.button("Test Cross Check with Preprocessed OCR Data"):
@@ -273,13 +276,12 @@ if st.button("Test Cross Check with Preprocessed OCR Data"):
         edited_df = st.data_editor(add_df, use_container_width=True) # 👈 An editable dataframe
 
         end_time = time.time()
+        total_records = len(add_df)
+        valid_matches = add_df["VALID"].sum()
+        st.write(f"Match Time: {end_time-start_time:.3f} secs")
+        st.write(f"Number of Matched Records: {valid_matches} out of {total_records}")
+        logger.info(f"Preprocessed Records Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_matches} of {total_records} - {valid_matches/total_records * 100:.2f}%")
 
-        st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
-        st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
 
-if st.button("Clear Data Table"):
-    if not add_df.empty:
-        add_df = pd.DataFrame()
-        images = None
-        ## empty temp_ocr_images directory
-        wipe_temp_dir()
+# comment in to auto-wipe temporary files
+# wipe_temp_dir()

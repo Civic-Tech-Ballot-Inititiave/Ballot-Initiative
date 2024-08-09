@@ -1,4 +1,3 @@
-prompt.md
 myenv/
 voter_registries/
 Split CSVs/*
@@ -28,6 +27,7 @@ buildNumber.properties
 *.pdf
 *.csv
 *.jpg
+*.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
