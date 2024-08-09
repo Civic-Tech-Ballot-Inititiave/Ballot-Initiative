@@ -107,6 +107,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*matching_algorithm_benchmarks.ipynb
 
 # IPython
 profile_default/
