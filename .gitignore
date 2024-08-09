@@ -1,4 +1,3 @@
-myenv/
 voter_registries/
 Split CSVs/*
 Split Documents/*
@@ -158,6 +157,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+myenv/
+
 
 # Spyder project settings
 .spyderproject
