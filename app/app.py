@@ -143,6 +143,7 @@ def wipe_temp_dir():
 ##
 
 # reading in election data
+
 voter_records_2023_df = pd.read_csv('data/raw_feb_23_city_wide.csv', dtype=str)
 
 # creating full name column
@@ -272,15 +273,15 @@ if st.button("Test Cross Check with Preprocessed OCR Data"):
             i+=1
 
         ## Editable Table
-        add_df = pd.DataFrame(matched_list, columns=["OCR RECORD", "MATCHED RECORD", "SCORE", "VALID"])
-        edited_df = st.data_editor(add_df, use_container_width=True) # 👈 An editable dataframe
+        test_df = pd.DataFrame(matched_list, columns=["OCR RECORD", "MATCHED RECORD", "SCORE", "VALID"])
+        edited_test_df = st.data_editor(test_df, use_container_width=True) # 👈 An editable dataframe
 
         end_time = time.time()
-        total_records = len(add_df)
-        valid_matches = add_df["VALID"].sum()
+        total_test_records = len(test_df)
+        valid_test_matches = add_df["VALID"].sum()
         st.write(f"Match Time: {end_time-start_time:.3f} secs")
-        st.write(f"Number of Matched Records: {valid_matches} out of {total_records}")
-        logger.info(f"Preprocessed Records Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_matches} of {total_records} - {valid_matches/total_records * 100:.2f}%")
+        st.write(f"Number of Matched Records: {valid_matches} out of {total_test_records}")
+        logger.info(f"Preprocessed Records Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_test_matches} of {total_test_records} - {valid_test_matches/total_test_records * 100:.2f}%")
 
 
 # comment in to auto-wipe temporary files
