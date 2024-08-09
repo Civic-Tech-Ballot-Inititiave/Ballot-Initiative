@@ -218,7 +218,6 @@ if images:
         matching_bar = st.progress(0, text="Performing Name Match")
         matched_list = list()
         start_time = time.time()
-        i = 0
         pattern = os.path.join('.', 'temp_ocr_images', "*jpg")
         jpg_files = glob.glob(pattern)
         i = 0
@@ -278,9 +277,9 @@ if st.button("Test Cross Check with Preprocessed OCR Data"):
 
         end_time = time.time()
         total_test_records = len(test_df)
-        valid_test_matches = add_df["VALID"].sum()
+        valid_test_matches = test_df["VALID"].sum()
         st.write(f"Match Time: {end_time-start_time:.3f} secs")
-        st.write(f"Number of Matched Records: {valid_matches} out of {total_test_records}")
+        st.write(f"Number of Matched Records: {valid_test_matches} out of {total_test_records}")
         logger.info(f"Preprocessed Records Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_test_matches} of {total_test_records} - {(valid_test_matches/total_test_records * 100):.2f}%")
 
 
