@@ -8,3 +8,4 @@ rapidfuzz==3.9.3
 Requests==2.32.3
 streamlit==1.32.0
 tqdm==4.66.4
+loguru==0.7.2

@@ -26,6 +26,7 @@ buildNumber.properties
 *.pdf
 *.csv
 *.jpg
+*.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -156,6 +157,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+myenv/
+
 
 # Spyder project settings
 .spyderproject
