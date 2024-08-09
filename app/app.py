@@ -146,7 +146,7 @@ def wipe_temp_dir():
 
 voter_records_2023_df = pd.read_csv('data/raw_feb_23_city_wide.csv', dtype=str)
 
-# creating full name column
+# creating full name, full address, and OCR columns
 voter_records_2023_df['Full Name'] = voter_records_2023_df["First_Name"] + ' ' + voter_records_2023_df['Last_Name']
 voter_records_2023_df['Full Address'] =  voter_records_2023_df["Street_Number"] + " " + voter_records_2023_df["Street_Name"] + " " + voter_records_2023_df["Street_Type"] + " " + voter_records_2023_df["Street_Dir_Suffix"]
 voter_records_2023_df['OCR'] = voter_records_2023_df["Full Name"] + ' ' + voter_records_2023_df["Full Address"]
