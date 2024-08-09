@@ -28,7 +28,7 @@ def score_function_fuzz(guess_full_name, full_name_list):
 
 def score_fuzzy_match_slim(query_name, names_list):
     # the default scorer produces a Levenshtein distance number, so we can use fuzz.ratio as a scorer to obtain the same format we've been getting for data so far
-    # default_process is a process that removes whitespace, lowers all letters, removes any non-alphanumeric characters
+    # default_process is a processor that removes whitespace, lowers all letters, removes any non-alphanumeric characters
     # by limiting to 5 we can save a little bit of space and time and code, since we were looping through all of the items before and only taking the top 5 of the sorted list.
     list_of_match_tuples = process.extract(query=query_name, choices=names_list, scorer=fuzz.ratio, processor=utils.default_process, limit=5)
     # this will produce a list of tuples whose values are as follows:
