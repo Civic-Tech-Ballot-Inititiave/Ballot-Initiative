@@ -229,7 +229,7 @@ if images:
                 name_, score_, id_ = tiered_search(dict_['Name'], dict_['Address'])
                 temp_dict['OCR RECORD'] = f"{dict_['Name']} {dict_['Address']}"
                 temp_dict['MATCHED RECORD'] = name_
-                temp_dict['SCORE'] = score_
+                temp_dict['SCORE'] = "{:.2f}".format(score_)
                 temp_dict['VALID'] = False
                 if score_ > 85.0:
                     temp_dict['VALID'] = True
@@ -247,7 +247,7 @@ if images:
         valid_matches = add_df["VALID"].sum()
         st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
         st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
-        logger.info(f"OCR and Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_matches} of {total_records} - {valid_matches/total_records * 100:2f}%")
+        logger.info(f"OCR and Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_matches} of {total_records} - {(valid_matches/total_records * 100):2f}%")
 
 # With Preprocessed Data
 if st.button("Test Cross Check with Preprocessed OCR Data"):
@@ -264,7 +264,7 @@ if st.button("Test Cross Check with Preprocessed OCR Data"):
             name_, score_, id_ = tiered_search(dict_['Name'], dict_['Address'])
             temp_dict['OCR RECORD'] = f"{dict_['Name']} {dict_['Address']}"
             temp_dict['MATCHED RECORD'] = name_
-            temp_dict['SCORE'] = score_
+            temp_dict['SCORE'] = "{:.2f}".format(score_)
             temp_dict['VALID'] = False
             if score_ > 85.0:
                 temp_dict['VALID'] = True
@@ -281,7 +281,7 @@ if st.button("Test Cross Check with Preprocessed OCR Data"):
         valid_test_matches = add_df["VALID"].sum()
         st.write(f"Match Time: {end_time-start_time:.3f} secs")
         st.write(f"Number of Matched Records: {valid_matches} out of {total_test_records}")
-        logger.info(f"Preprocessed Records Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_test_matches} of {total_test_records} - {valid_test_matches/total_test_records * 100:.2f}%")
+        logger.info(f"Preprocessed Records Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_test_matches} of {total_test_records} - {(valid_test_matches/total_test_records * 100):.2f}%")
 
 
 # comment in to auto-wipe temporary files
