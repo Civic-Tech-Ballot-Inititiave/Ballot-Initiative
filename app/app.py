@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import base64
 from rapidfuzz import fuzz, process, utils
 import time
@@ -99,45 +100,47 @@ def score_fuzzy_match_slim(ocr_name, full_name_list, scorer_=fuzz.token_ratio, l
 ##
 
 def tiered_search(name, address):
-    name_address = f"{name} {address}"
+
+    name_address_combo = f"{name} {address}"
 
     # Searches for a match within the Ward returned by OCR
+    name_address_matches1 = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df[voter_records_2023_df['WARD'] == f"{dict_['Ward']}.0"]["Full Name and Full Address"])
+    name_address__name1, name_address__score1, name_address__id1 = name_address_matches1[0]
 
-    name_address_matches = score_fuzzy_match_slim(name_address, voter_records_2023_df[voter_records_2023_df['WARD'] == f"{dict_['Ward']}.0"]["Full Name and Full Address"])
-    name_address__name, name_address__score, name_address__id = name_address_matches[0]
+    # if score is more than 85, return the tuple
+    if name_address__score1 >= 85.0:
+        return (name_address__name1, name_address__score1, name_address__id1)
 
-    # If no Valid matches are found in the ward, searches for a match against the entire registry except the ward already checked
-
-    if name_address__score < 85.0:
-        name_address_matches2 = score_fuzzy_match_slim(name_address, voter_records_2023_df[voter_records_2023_df['WARD'] != f"{dict_['Ward']}.0"]["Full Name and Full Address"])
-        name_address__score2 = name_address_matches2[0][1]
-
-        # If the Registry search is higher than the Ward search, reassigns values for score check and Full Name score comparison
-
-        if name_address__score < name_address__score2:
-            name_address__name, name_address__score_, name_address__id = name_address_matches2[0]
-
-    # If there is a valid match on either search, returns the record
-    if name_address__score >= 85.0:
-        return (name_address__name, name_address__score, name_address__id)
-
-    # IF no Valid matches have been found, searches for a match using only the Full Name
-
+    # if score is below 85, do additional processing
     else:
-        full_name_matches = score_fuzzy_match_slim(name, voter_records_2023_df["Full Name"], scorer_=fuzz.ratio)
-        full_name__name, full_name__score, full_name__id = full_name_matches[0]
 
-    # Compare scores of full name + address match to score of Full Name match and take the record with the highest score in the format Tuple(matched_record, score, index)
+        # computing matches based on name and address; only considers all other wards
+        name_address_matches2 = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df[voter_records_2023_df['WARD'] != f"{dict_['Ward']}.0"]["Full Name and Full Address"])
+        name_address__name2, name_address__score2, name_address__id2 = name_address_matches2[0]
 
-    # If Name + Address score is greater than the Full Name score, return Name + Address Record
-    if name_address__score > full_name__score:
-        return (name_address__name, name_address__score, name_address__id)
+        # if the new voter records score is greater than 85, return tuple
+        if name_address__score2 >= 85.0:
+            return (name_address__name2, name_address__score2, name_address__id2)
 
-    # Else return the Full Name record
-    else:
-        address = voter_records_2023_df.loc[full_name__id, 'Full Address']
-        full_name_address = f"{full_name__name} {address}"
-        return (full_name_address, full_name__score, full_name__id)
+        # if score is less than 85, perform full records search based on name
+        # and return results with highest score
+        else:
+            # computing matches based on name alone; considers full voter records
+            full_name_matches = score_fuzzy_match_slim(name, voter_records_2023_df["Full Name"], scorer_=fuzz.ratio)
+            full_name__name, full_name__score, full_name__id = full_name_matches[0]
+
+            # find max from three scores
+            max_indx = np.argmax([name_address__score1, name_address__score2, full_name__score])
+
+            # return records associated with that max
+            if max_indx== 0:
+                return (name_address__name1, name_address__score1, name_address__id1)
+            elif max_indx == 1:
+                return (name_address__name2, name_address__score2, name_address__id2)
+            else:
+                address = voter_records_2023_df.loc[full_name__id, 'Full Address']
+                full_name_address = f"{full_name__name} {address}"
+                return (full_name_address, full_name__score, full_name__id)
 
 ##
 # DELETE TEMPORARY FILES
