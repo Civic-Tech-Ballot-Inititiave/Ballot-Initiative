@@ -66,6 +66,7 @@ _NOTE: You currently have to use your own API key for the project, but getting o
 If you're new to the project, you should first work through the onboarding notebook.
 
 - [Onboarding Notebook](notebooks/onboarding_notebook.ipynb): Goes through the goals of the projects, provides examples on the OCR, and the fuzzy match validation. At the end outlines some ways to contribute to the existing work.
+   - [Colab Notebook](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)
 
 ## Run Application Locally
 
