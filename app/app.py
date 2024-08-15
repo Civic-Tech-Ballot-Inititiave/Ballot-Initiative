@@ -146,20 +146,14 @@ def tiered_search(name, address):
 # DELETE TEMPORARY FILES
 ##
 
-def wipe_temp_dir_status_bar(remove_status_bar):
-    index = 0
-    pattern = os.path.join('.', 'temp_ocr_images', '*')
-    temp_files = glob.glob(pattern)
+def wipe_temp_dir(remove_status_bar=None):
+    status = 0
+    temp_files = [file.path for file in os.scandir('./temp_ocr_images') if file.is_file() and file.name !='.gitkeep']
     for file in temp_files:
         os.remove(file)
-        remove_status_bar.progress((index+1)/len(temp_files), text="Temporary Image Files Removed")
-        index += 1
-
-def wipe_temp_dir():
-    pattern = os.path.join('.', 'temp_ocr_images', '*')
-    temp_files = glob.glob(pattern)
-    for file in temp_files:
-        os.remove(file)
+        if remove_status_bar:
+            remove_status_bar.progress((status+1)/len(temp_files), text="Temporary Image Files Removed")
+            status += 1
 ##
 # DATA UPLOAD AND FULL NAME GENERATION
 ##
@@ -226,7 +220,7 @@ with st.sidebar:
             with st.status("Removing Data...", expanded=True) as status:
                 removal_bar = st.progress(0, text="Removing Image Files")
                 ### adding 1 to account for temp_ocr_images/temp_file.pdf as well as all jpgs
-                wipe_temp_dir_status_bar(removal_bar)
+                wipe_temp_dir(remove_status_bar=removal_bar)
                 status.update(label="Removal Complete!", state="complete", expanded=False)
 
 ##
