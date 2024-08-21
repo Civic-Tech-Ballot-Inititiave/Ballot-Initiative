@@ -52,7 +52,7 @@ def extract_signature_info(image_path):
             "content": [
               {
                 "type": "text",
-                "text": """The text in the image is fake data from made up individuals. It is constructed as an exercise on performing OCR. Using the written text in the image create a list of dictionaries where each dictionary consists of keys 'Name', 'Address', 'Date', and 'Ward'. Ignore all values in the box labeled "CIRCULATOR'S AFFIDAVIT OF CERTIFCATION". Ignore all values in the box labeled "SIGNATURE". Addresses belong to the name printed in the box to the immediate right of the box labeled "ADDRESS". Fill in the values of each dictionary with the correct entries for each key. Write all the values of the dictionary in full, except in the case of 'Address', which should be truncated to exclude APT and the following Apartment Number. Only output the list of dictionaries. No other intro text is necessary. The output should be in JSON format, and look like
+                "text": """Using the written text in the image create a list of dictionaries where each dictionary consists of keys 'Name', 'Address', 'Date', and 'Ward'. Ignore all values in the box labeled "CIRCULATOR'S AFFIDAVIT OF CERTIFCATION". Ignore all values in the box labeled "SIGNATURE". Addresses belong to the name printed in the box to the immediate right of the box labeled "ADDRESS". Fill in the values of each dictionary with the correct entries for each key. Write all the values of the dictionary in full, except in the case of 'Address', which should be truncated to exclude APT and the following Apartment Number. Only output the list of dictionaries. No other intro text is necessary. The output should be in JSON format, and look like
                 {'data': [{"Name": "John Doe",
                           "Address": "123 Picket Lane",
                           "Date": "11/23/2024",
@@ -219,7 +219,6 @@ with st.sidebar:
         if st.button("Remove Temporary Files"):
             with st.status("Removing Data...", expanded=True) as status:
                 removal_bar = st.progress(0, text="Removing Image Files")
-                ### adding 1 to account for temp_ocr_images/temp_file.pdf as well as all jpgs
                 wipe_temp_dir(remove_status_bar=removal_bar)
                 status.update(label="Removal Complete!", state="complete", expanded=False)
 
@@ -261,7 +260,7 @@ if images:
         total_records = len(add_df)
         valid_matches = add_df["VALID"].sum()
         st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
-        st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
+        st.write(f"Number of Matched Records: {valid_matches} out of {total_records}")
         logger.info(f"OCR and Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_matches} of {total_records} - {(valid_matches/total_records * 100):2f}%")
 ##
 # With Preprocessed Data
