@@ -219,7 +219,6 @@ with st.sidebar:
         if st.button("Remove Temporary Files"):
             with st.status("Removing Data...", expanded=True) as status:
                 removal_bar = st.progress(0, text="Removing Image Files")
-                ### adding 1 to account for temp_ocr_images/temp_file.pdf as well as all jpgs
                 wipe_temp_dir(remove_status_bar=removal_bar)
                 status.update(label="Removal Complete!", state="complete", expanded=False)
 
@@ -261,7 +260,7 @@ if images:
         total_records = len(add_df)
         valid_matches = add_df["VALID"].sum()
         st.write(f"OCR and Match Time: {end_time-start_time:.3f} secs")
-        st.write(f"Number of Matched Records: {sum(list(add_df['VALID']))} out of {len(add_df)}")
+        st.write(f"Number of Matched Records: {valid_matches} out of {total_records}")
         logger.info(f"OCR and Match Time {end_time-start_time:.3f} secs | Matched Records: {valid_matches} of {total_records} - {(valid_matches/total_records * 100):2f}%")
 ##
 # With Preprocessed Data
