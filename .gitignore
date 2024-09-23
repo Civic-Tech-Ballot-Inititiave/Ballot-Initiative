@@ -1,6 +1,7 @@
 voter_registries/
 Split CSVs/*
 Split Documents/*
+trash_files/
 Ballot Inititive Scans/*
 Aggregated Data/*
 .settings/
