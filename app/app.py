@@ -105,6 +105,9 @@ def tiered_search(name, address):
 
     # Searches for a match within the Ward returned by OCR
     name_address_matches1 = score_fuzzy_match_slim(name_address_combo, voter_records_2023_df[voter_records_2023_df['WARD'] == f"{dict_['Ward']}.0"]["Full Name and Full Address"])
+    if len(name_address_matches1) == 0:
+        return '', 0.0, 0
+
     name_address__name1, name_address__score1, name_address__id1 = name_address_matches1[0]
 
     # if score is more than 85, return the tuple
@@ -241,6 +244,8 @@ if images:
             for dict_ in resulting_data:
                 temp_dict = dict()
                 name_, score_, id_ = tiered_search(dict_['Name'], dict_['Address'])
+                if name_ == '':
+                    continue
                 temp_dict['OCR RECORD'] = f"{dict_['Name']} {dict_['Address']}"
                 temp_dict['MATCHED RECORD'] = name_
                 temp_dict['SCORE'] = "{:.2f}".format(score_)
@@ -280,6 +285,8 @@ if os.path.exists('data/processed_ocr_data.json'):
             for dict_ in resulting_data:
                 temp_dict = dict()
                 name_, score_, id_ = tiered_search(dict_['Name'], dict_['Address'])
+                if name_ == '':
+                    continue                
                 temp_dict['OCR RECORD'] = f"{dict_['Name']} {dict_['Address']}"
                 temp_dict['MATCHED RECORD'] = name_
                 temp_dict['SCORE'] = "{:.2f}".format(score_)
