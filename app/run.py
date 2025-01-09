@@ -3,7 +3,6 @@ import os
 import utils_docker
 import shutil 
 import sys
-import env
 
 # Initialize Docker client
 DOCKER_CLIENT = docker.from_env()
@@ -31,6 +30,7 @@ def initializeFiles():
         else:
             print("Running in GitHub Actions, continuing without exiting.")
 initializeFiles()
+import env
 
 # Base configuration
 if False: # Enable this to run Ollama
