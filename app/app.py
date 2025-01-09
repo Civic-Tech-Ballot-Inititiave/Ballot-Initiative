@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import glob
+import env
 from loguru import logger
 
 from pdf2image import convert_from_bytes
