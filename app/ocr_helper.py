@@ -238,7 +238,8 @@ def collect_ocr_data(filedir, filename, max_page_num = None, batch_size=10):
     loop = get_or_create_event_loop()
     
     # Process in batches
-    for i in range(0, total_pages, batch_size):
+    print("Processing batches in {} pages per batch".format(batch_size))
+    for i in tqdm(range(0, total_pages, batch_size)):
         batch = encoded_images[i:i + batch_size]
         print(f"\nProcessing batch {i//batch_size + 1} of {(total_pages + batch_size - 1)//batch_size}")
         
@@ -250,7 +251,9 @@ def collect_ocr_data(filedir, filename, max_page_num = None, batch_size=10):
             current_page = i + page_idx
             ocr_data = add_metadata(result, current_page, filename)
             full_data.extend(ocr_data)
-            print(f"Completed Page {current_page + 1} of {total_pages}")
+
+    return full_data
+
 
     return full_data
 
