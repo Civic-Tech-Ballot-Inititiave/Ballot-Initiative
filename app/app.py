@@ -89,7 +89,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Application Header
-st.logo(BALLOT_ICON)
 st.header("Ballot Initiative - Signature Verification")
 st.caption("Automated signature verification for ballot initiatives")
 st.markdown("<hr style='height:3px;border:none;color:#0066cc;background-color:#0066cc;'/>", unsafe_allow_html=True)
@@ -99,7 +98,7 @@ with st.sidebar:
     # Add a logo (replace with your own logo path)
     # add_logo(BALLOT_ICON)
 
-    st.logo(BALLOT_ICON)
+    # st.logo(BALLOT_ICON)
     
     st.markdown("# 📋 Automated Petition Signature Validation")
     
