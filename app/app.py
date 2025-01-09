@@ -237,7 +237,7 @@ with col2:
             pdf_path = os.path.join('temp_ocr_images', UPLOADED_FILENAME)
             with open(pdf_path, 'wb') as f:
                 f.write(pdf_bytes)
-            
+        
             # Convert first page to image for preview
             preview_image = convert_from_bytes(pdf_bytes, first_page=1, last_page=1)[0]
             num_pages = len(convert_from_bytes(pdf_bytes))
@@ -287,6 +287,8 @@ with col2:
 
                     for dict_ in ocr_data:
                         temp_dict = {k: v for k, v in dict_.items()}
+                        if temp_dict['Name'] == '':
+                            continue
                         temp_dict['OCR Name'] = dict_['Name'].title()
                         temp_dict['OCR Address'] = dict_['Address']
                         temp_dict['OCR Ward'] = dict_['Ward']
