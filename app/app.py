@@ -1,17 +1,11 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import base64
-from rapidfuzz import fuzz, process, utils
-import time
 import os
-import json
 import glob
 from loguru import logger
 
 from pdf2image import convert_from_bytes
 from dotenv import load_dotenv
-from openai import OpenAI
 import streamlit_shadcn_ui as ui
 
 from ocr_helper import collecting_pdf_encoded_images, extract_from_encoding, add_metadata
