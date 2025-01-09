@@ -89,7 +89,7 @@ def extract_from_encoding(base64_image):
     """
 
     # open AI client definition 
-    client = AsyncOpenAI(api_key=OPENAI_API_KEY,
+    client = OpenAI(api_key=OPENAI_API_KEY,
                     base_url="https://oai.helicone.ai/v1",  # Set the API endpoint
                     default_headers= {  # Optionally set default headers or set per request (see below)
                           "Helicone-Auth": f"Bearer {HELICONE_PERSONAL_API_KEY}", }
