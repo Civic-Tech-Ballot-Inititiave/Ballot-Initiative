@@ -11,8 +11,13 @@ from PIL import Image
 from rapidfuzz import fuzz, process, utils
 from pdf2image import convert_from_path
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 import pandas as pd
+import io
+import numpy as np
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from itertools import islice
 
 # local environment storage
 repo_name = 'Ballot-Initiative'
@@ -22,6 +27,10 @@ load_dotenv(os.path.join(REPODIR, '.env'), override=True)
 # open ai api key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 HELICONE_PERSONAL_API_KEY = os.getenv("HELICONE_PERSONAL_API_KEY")
+
+###
+## OCR FUNCTIONS
+###
 
 class OCREntry(BaseModel):
     Name: str
@@ -34,9 +43,6 @@ class OCRData(BaseModel):
     Data: List[OCREntry]
 
 
-###
-## OCR FUNCTIONS
-###
 
 # Function is needed to put image in proper format for uploading
 # From: https://stackoverflow.com/questions/77284901/upload-an-image-to-chat-gpt-using-the-api
@@ -44,70 +50,47 @@ def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
-def image_cropper(file_path):
-
-    # Opens a image in RGB mode
-    im = Image.open(file_path)
-
-    # Size of the image in pixels (size of original image)
-    # (This is not mandatory)
-    width, height = im.size
-
-    # Setting the points for cropped image
-    left = 0
-    top = int(0.385*height)
-    right = width
-    bottom = int(0.725* height)
-    
-    # Cropped image of above dimension
-    # (It will not change original image)
-    im1 = im.crop((left, top, right, bottom))
-
-    im1.save(file_path)
-    
-    # Shows the image in image viewer
-    return im1
 
 def collecting_pdf_encoded_images(file_path):
-
+    """Convert PDF pages to encoded images, cropping to target area.
+    Returns list of base64 encoded image strings."""
+    
     print("Converting PDF file to Image Format")
-    # getting collection of images
+    # Convert PDF pages to images in memory
     images = convert_from_path(file_path)
-    print()
-    print("Cropping Images and Converting to Bytes Objects")
-    # list of images
-    encoded_image_list = list()
-    for k in tqdm(range(len(images))):
-
-        # selecting image
-        image = images[k]
-
-        # saving image name
-        image_name = f"temp_image_{k}.jpg"
-        image.save(image_name)
+    
+    print("\nCropping Images and Converting to Bytes Objects")
+    encoded_image_list = []
+    
+    # Process each page
+    for image in tqdm(images):
+        # Get image dimensions
+        width, height = image.size
         
-        # crop image; saves under same name
-        image_cropper(image_name)
-
-        # encoding result as an image
-        encoded_result = encode_image(image_name)
-        encoded_image_list.append(encoded_result)
-
-        # cleaning up saved image
-        os.remove(image_name)   
+        # Crop directly in memory
+        cropped = image.crop((
+            0,                  # left
+            int(0.385*height),  # top 
+            width,             # right
+            int(0.725*height)  # bottom
+        ))
+        
+        # Convert to bytes and encode in one step
+        with io.BytesIO() as bio:
+            cropped.save(bio, format='JPEG')
+            encoded = base64.b64encode(bio.getvalue()).decode('utf-8')
+            encoded_image_list.append(encoded)
 
     return encoded_image_list
 
-
 def extract_from_encoding(base64_image):
-
     """
-    Extracts names and addresses from single ballot image.
+    Extracts names and addresses from single ballot image asynchronously.
     Uses base64_image
     """
 
-    # open AI client definition
-    client = OpenAI(api_key=OPENAI_API_KEY,
+    # open AI client definition 
+    client = AsyncOpenAI(api_key=OPENAI_API_KEY,
                     base_url="https://oai.helicone.ai/v1",  # Set the API endpoint
                     default_headers= {  # Optionally set default headers or set per request (see below)
                           "Helicone-Auth": f"Bearer {HELICONE_PERSONAL_API_KEY}", }
@@ -116,7 +99,7 @@ def extract_from_encoding(base64_image):
     # prompt message
     messages = [
           {
-            "role": "user",
+            "role": "user", 
             "content": [
               {
                 "type": "text",
@@ -151,6 +134,57 @@ def extract_from_encoding(base64_image):
     
     return parsed_list
 
+async def extract_from_encoding_async(base64_image):
+    """
+    Extracts names and addresses from single ballot image asynchronously.
+    Uses base64_image
+    """
+
+    # open AI client definition 
+    client = AsyncOpenAI(api_key=OPENAI_API_KEY,
+                    base_url="https://oai.helicone.ai/v1",  # Set the API endpoint
+                    default_headers= {  # Optionally set default headers or set per request (see below)
+                          "Helicone-Auth": f"Bearer {HELICONE_PERSONAL_API_KEY}", }
+                          )                    
+
+    # prompt message
+    messages = [
+          {
+            "role": "user", 
+            "content": [
+              {
+                "type": "text",
+                "text": """Using the written text in the image create a list of dictionaries where each dictionary consists of keys 'Name', 'Address', 'Date', and 'Ward'. Fill in the values of each dictionary with the correct entries for each key. Write all the values of the dictionary in full. Only output the list of dictionaries. No other intro text is necessary."""
+              },
+              {
+                "type": "text",
+                "text": """Remove the city name 'Washington, DC' and any zip codes from the 'Address' values."""
+              },              
+              {
+                "type": "image_url",
+                "image_url": {
+                  "url": f"data:image/jpeg;base64,{base64_image}"
+                }
+              }
+            ]
+          }
+        ]    
+
+    results = await client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.0,
+            response_format= OCRData
+            )     
+
+    # parsing results
+    parsed_results = results.choices[0].message.parsed    
+
+    # dictionary results
+    parsed_list = json.loads(parsed_results.json())['Data']
+    
+    return parsed_list
+
 # function for adding data
 def add_metadata(initial_data, page_no : int, filename : str):
 
@@ -165,30 +199,60 @@ def add_metadata(initial_data, page_no : int, filename : str):
 
     return final_data
 
-def collect_ocr_data(filedir, filename, max_page_num = None):
+async def process_batch_async(encodings, batch_size=5):
+    """
+    Process a batch of images concurrently
+    """
+    tasks = []
+    for encoding in encodings:
+        tasks.append(extract_from_encoding_async(encoding))
+    results = await asyncio.gather(*tasks)
+    return results
+
+def get_or_create_event_loop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop
+
+def collect_ocr_data(filedir, filename, max_page_num = None, batch_size=10):
 
     # collecting images
-    encoded_images = collecting_pdf_encoded_images(f"{filedir}/{filename}")
+    encoded_images = collecting_pdf_encoded_images(os.path.join(filedir, filename))
 
-    # selecting pages 
-    encoded_images = encoded_images[:max_page_num]
-
-    print()
-    print("Files Successfully Converted to Bytes")      
+    # selecting pages
+    if max_page_num: 
+        encoded_images = encoded_images[:max_page_num]
 
     print()
-    print("Performing OCR to read Names and Addresses")       
+    print("Files Successfully Converted to Bytes")
+    print("Performing OCR to read Names and Addresses")
 
-    full_data = list()
-    for page_no in tqdm(range(len(encoded_images))):
-        encoding = encoded_images[page_no]
-        print(f"Processing Page {page_no+1} of {filename}")
-        ocr_data = extract_from_encoding(encoding)
-        ocr_data = add_metadata(ocr_data, page_no, filename)
-        full_data +=ocr_data
+    full_data = []
+    total_pages = len(encoded_images)
+
+    # getting event loop
+    loop = get_or_create_event_loop()
+    
+    # Process in batches
+    print("Processing Batches in {} per batch".format(batch_size))
+    for i in tqdm(range(0, total_pages, batch_size)):
+        batch = encoded_images[i:i + batch_size]
+        print(f"\nProcessing batch {i//batch_size + 1} of {(total_pages + batch_size - 1)//batch_size}")
+        
+        # Run async batch processing using the event loop
+        batch_results = loop.run_until_complete(process_batch_async(batch))   
+        
+        # Add metadata for each result in the batch
+        for page_idx, result in enumerate(batch_results):
+            current_page = i + page_idx
+            ocr_data = add_metadata(result, current_page, filename)
+            full_data.extend(ocr_data)
+            # print(f"Completed Page {current_page + 1} of {total_pages}")
 
     return full_data
-
 
 def create_ocr_df(filedir, filename, max_page_num = None): 
 
@@ -209,102 +273,128 @@ def create_ocr_df(filedir, filename, max_page_num = None):
 
     return ocr_df    
 
-
 ###
 ## MATCHING FUNCTIONS
 ###
 
 def create_select_voter_records(voter_records):
+    """
+    Creates a simplified DataFrame with full names and addresses from voter records.
+    
+    Args:
+        voter_records (pd.DataFrame): DataFrame containing voter information with columns for
+            first name, last name, and address components.
+            
+    Returns:
+        pd.DataFrame: DataFrame with 'Full Name' and 'Full Address' columns
+    """
+    # Create full name by combining first and last names
+    name_components = ["First_Name", "Last_Name"] 
+    voter_records["Full Name"] = voter_records[name_components].astype(str).agg(" ".join, axis=1)
 
-    # creating full name
-    cols = ["First_Name", "Last_Name"]
-    voter_records["Full Name"] = voter_records[cols].apply(lambda row: " ".join(row.values.astype(str)), axis=1)
+    # Create full address by combining address components
+    address_components = ["Street_Number", "Street_Name", "Street_Type", "Street_Dir_Suffix"]
+    voter_records["Full Address"] = voter_records[address_components].astype(str).agg(" ".join, axis=1)
 
-    # creating full address
-    cols = ["Street_Number", "Street_Name", "Street_Type", "Street_Dir_Suffix"]
-    voter_records["Full Address"] = voter_records[cols].apply(lambda row: " ".join(row.values.astype(str)), axis=1)
-
-    # only getting the full list of names
-    limited_voter_records = voter_records[["Full Name", "Full Address"]]
-
-    return limited_voter_records
+    # Return only the columns we need
+    return voter_records[["Full Name", "Full Address"]]
 
 
 def score_fuzzy_match_slim(ocr_result, comparison_list, scorer_=fuzz.ratio, limit_=10):
-    list_of_match_tuples = process.extract(query=ocr_result, choices=comparison_list, scorer=scorer_, processor=utils.default_process, limit=limit_)
-    return list_of_match_tuples
+    """Optimized fuzzy matching"""
+    # Convert to numpy array for faster operations
+    comparison_array = np.array(comparison_list)
+    
+    # Vectorize the scorer function
+    vectorized_scorer = np.vectorize(lambda x: scorer_(ocr_result, x))
+    
+    # Calculate all scores at once
+    scores = vectorized_scorer(comparison_array)
+    
+    # Get top N indices
+    top_indices = np.argpartition(scores, -limit_)[-limit_:]
+    top_indices = top_indices[np.argsort(scores[top_indices])[::-1]]
+    
+    # Return results in required format
+    return [(comparison_array[i], scores[i], i) for i in top_indices]
 
-def get_matched_name_address(ocr_name, ocr_address, select_voter_records): 
+def get_matched_name_address(ocr_name, ocr_address, select_voter_records):
+    """Optimized name and address matching"""
+    # Convert to numpy arrays once
+    voter_names = select_voter_records["Full Name"].values
+    voter_addresses = select_voter_records["Full Address"].values
+    
+    # Get name matches
+    name_matches = score_fuzzy_match_slim(ocr_name, voter_names)
+    
+    # Get corresponding addresses for top name matches
+    matched_indices = [x[2] for x in name_matches]
+    relevant_addresses = voter_addresses[matched_indices]
+    
+    # Get address matches only for relevant addresses
+    address_matches = score_fuzzy_match_slim(ocr_address, relevant_addresses)
+    
+    # Calculate harmonic means using numpy
+    name_scores = np.array([x[1] for x in name_matches])
+    addr_scores = np.array([x[1] for x in address_matches])
+    harmonic_means = 2 * name_scores * addr_scores / (name_scores + addr_scores)
+    
+    # Create and sort results
+    results = list(zip(
+        [x[0] for x in name_matches],
+        [x[0] for x in address_matches],
+        harmonic_means,
+        matched_indices
+    ))
+    return sorted(results, key=lambda x: x[2], reverse=True)
 
-    # list of voter names
-    voter_name_list = select_voter_records["Full Name"]
-
-    # getting 10 highest match results
-    high_score_name_results = score_fuzzy_match_slim(ocr_result = ocr_name, 
-                                                     comparison_list = voter_name_list, 
-                                                     limit_ = 10)    
-
-    # getting indices for highest match results
-    high_score_name_idxs = [elem[-1] for elem in high_score_name_results]
-
-    # getting the addresses for the highest match results
-    full_addresses_for_high_scores =  list(select_voter_records.iloc[high_score_name_idxs]["Full Address"])
-
-    # getting the scores between ocr address and full address list
-    cut_address_results = score_fuzzy_match_slim(ocr_result = ocr_address, 
-                                                 comparison_list = full_addresses_for_high_scores)
-
-    # getting list of high scores
-    high_score_list = list()
-    for name_tuple, address_tuple in zip(high_score_name_results, cut_address_results):
+def create_ocr_matched_df(ocr_df, select_voter_records, threshold=92.5):
+    """Optimized DataFrame matching"""
+    # Pre-compute numpy arrays
+    names = select_voter_records["Full Name"].values
+    addresses = select_voter_records["Full Address"].values
+    
+    # Process in chunks for better memory management
+    chunk_size = 1000
+    results = []
+    
+    for chunk_start in tqdm(range(0, len(ocr_df), chunk_size)):
+        chunk = ocr_df.iloc[chunk_start:chunk_start + chunk_size]
         
-        # getting name and addresses
-        name, name_score, idx = name_tuple
-        address, address_score, _ = address_tuple
-
-        # getting harmonic means
-        harmonic_mean_score = 2*name_score*address_score/(name_score+address_score)
-
-        # appending to list
-        high_score_list.append([name, address, harmonic_mean_score, idx])
-
-    # sorting by score
-    high_score_list.sort(key=lambda x: x[2], reverse= True)    
-
-    return high_score_list
-
-def create_ocr_matched_df(ocr_df, select_voter_records, threshold = 92.5):
-
-    # getting OCR name and address
-    ocr_names = list(ocr_df["OCR Name"])
-    ocr_addresses = list(ocr_df["OCR Address"])    
-
-    # creating new columns for matched names, addresses and scores
-    matched_name_list = list()
-    matched_address_list = list()
-    net_score_list = list()
-
-    for ocr_name, ocr_address in tqdm(zip(ocr_names, ocr_addresses)):
-
-        # getting list of high scorers
-        high_score_list = get_matched_name_address(ocr_name, ocr_address, select_voter_records)
-
-        # getting the highest scores for name
-        matched_name, matched_address, net_score, _  = high_score_list[0]
-
-        # appending results
-        matched_name_list.append(matched_name)
-        matched_address_list.append(matched_address)
-        net_score_list.append(net_score)
-
-    # adding new columns to df
-    ocr_df["Matched Name"] = matched_name_list
-    ocr_df["Matched Address"] = matched_address_list
-    ocr_df["Match Score"] = net_score_list    
-    ocr_df["Valid"] = ocr_df["Match Score"].apply(lambda row: row>=threshold)
-
-    # reordering columns; keeping only the relevant ones
-    column_order = ["OCR Name", "OCR Address", "Matched Name", "Matched Address", "Date", "Match Score", "Valid", "Page Number", "Row Number", "Filename"]
-    ocr_df_simple = ocr_df[column_order]
-
-    return ocr_df_simple   
+        # Process chunk in parallel
+        with ThreadPoolExecutor() as executor:
+            chunk_results = list(executor.map(
+                lambda row: get_matched_name_address(
+                    row["OCR Name"],
+                    row["OCR Address"],
+                    select_voter_records
+                ),
+                [row for _, row in chunk.iterrows()]
+            ))
+        
+        # Extract best matches
+        chunk_matches = [(res[0][0], res[0][1], res[0][2]) for res in chunk_results]
+        results.extend(chunk_matches)
+    
+    # Create result DataFrame efficiently
+    match_df = pd.DataFrame(
+        results,
+        columns=["Matched Name", "Matched Address", "Match Score"]
+    )
+    
+    # Combine results with original DataFrame
+    result_df = pd.concat([
+        ocr_df,
+        match_df
+    ], axis=1)
+    
+    # Add Valid column
+    result_df["Valid"] = result_df["Match Score"] >= threshold
+    
+    # Reorder columns
+    column_order = [
+        "OCR Name", "OCR Address", "Matched Name", "Matched Address",
+        "Date", "Match Score", "Valid", "Page Number", "Row Number", "Filename"
+    ]
+    
+    return result_df[column_order]
