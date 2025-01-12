@@ -1,0 +1,25 @@
+name: Run Python Script with Docker on Push
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch name as needed
+
+jobs:
+  run-python-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install python3-docker
+        run: sudo apt update && sudo apt install -y python3-docker
+
+      - name: Build and Run Python Script with Docker
+        run: |
+          cd app
+          docker run --rm -v $(pwd):/app -w /app python:3.12 bash -c "
+            pip install -r requirements.txt &&
+            python app.py
+          "
