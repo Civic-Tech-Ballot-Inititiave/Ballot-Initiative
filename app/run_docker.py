@@ -30,34 +30,8 @@ def initializeFiles():
         else:
             print("Running in GitHub Actions, continuing without exiting.")
 initializeFiles()
-import env
 
-# Base configuration
-if False: # Enable this to run Ollama
-    ollama = {
-        "name": "ollama",
-        "detach": True,  # Runs the container in detached mode
-        "volumes": {
-            os.path.join(current_dir, "ollama", "ollama_models"): {
-                "bind": "/root/.ollama/models",
-                "mode": "rw",
-            },
-            os.path.join(current_dir, "ollama", "whisper_models"): {
-                "bind": "/data/cache/whisper/models",
-                "mode": "rw",
-            },
-        },
-        "environment": {
-            "OLLAMA_ORIGINS": "*",
-            "ENABLE_OLLAMA_API": "True",
-            "DATA_DIR": "/data",
-        },
-        "image": "ollama/ollama",
-        "ports":{"11434/tcp": 11434},  # LLama (11434 in leetspeak) default port
-    }
-    utils_docker.run_container(ollama)
-
-
+# Run the app in a Docker container
 initiative = dict(
     image="python:3.12-slim",
     name="initiative",

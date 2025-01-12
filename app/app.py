@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import os
 import glob
-import env
 from loguru import logger
 
 from pdf2image import convert_from_bytes
@@ -17,7 +16,8 @@ logger.remove()
 # logger.add("data/logs/benchmark_logs.log", rotation="10 MB", level="INFO")
 
 # loading environmental variables
-load_dotenv('.env', override=True)
+if not os.getenv("GITHUB_ACTIONS"):
+    load_dotenv('.env', override=True)
 
 # define your open AI API key here; Remember this is a personal notebook! Don't push your API key to the remote repo
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
