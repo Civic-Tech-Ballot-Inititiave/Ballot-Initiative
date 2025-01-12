@@ -14,4 +14,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install python3-docker
-        run: cd app && sudo apt install python3-docker && sudo python run_docker.py
+        run: sudo apt update && sudo apt install -y python3-docker
+
+      - name: Build and Run Python Script with Docker
+        run: |
+          cd app
+          docker run --rm -v $(pwd):/app -w /app python:3.12 bash -c "
+            pip install -r requirements.txt &&
+            python run_docker.py
+          "
