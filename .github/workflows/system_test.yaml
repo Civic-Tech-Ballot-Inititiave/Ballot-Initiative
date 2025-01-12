@@ -21,5 +21,5 @@ jobs:
           cd app
           docker run --rm -v $(pwd):/app -w /app python:3.12 bash -c "
             pip install -r requirements.txt &&
-            python run_docker.py
+            python app.py
           "
