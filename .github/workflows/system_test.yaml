@@ -17,11 +17,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y python3-docker
 
       - name: Run Python script in Docker container
-        working-directory: python
+        working-directory: app
         run: |
           # Run the script using the official Python image
           docker run --rm \
-            -v ${{ github.workspace }}/python:/app \
+            -v ${{ github.workspace }}/app:/app \
             -w /app \
             python:3.12-slim \
             bash -c "pip install -r requirements.txt && python run.py"
