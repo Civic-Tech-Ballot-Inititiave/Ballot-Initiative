@@ -59,14 +59,12 @@ OPENAI_API_KEY = <YOUR API KEY>
 
 _NOTE: You currently have to use your own API key for the project, but getting one is quite easy. Check out this guide [("How to get an OpenAI API Key for ChatGPT")](https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt) to learn how to get your own API key._
 
-3. The voter records file does not exist in this repository and must be requested from the repository owner. Once the file is requested, save it as `raw_feb_23_city_wide.csv` file to the `data` folder.
-
 ## Learning About Project
 
 If you're new to the project, you should first work through the onboarding notebook.
 
-- [Onboarding Notebook](notebooks/onboarding_notebook.ipynb): Goes through the goals of the projects, provides examples on the OCR, and the fuzzy match validation. At the end outlines some ways to contribute to the existing work.
-   - [Colab Notebook](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)
+- [Onboarding Notebook](notebooks/2025-01-20-onboarding_notebook.ipynb): Goes through the goals of the projects, provides examples on the OCR, and the fuzzy match validation. At the end outlines some ways to contribute to the existing work.
+  - [Colab Notebook](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)
 
 ## Run Application Locally
 
@@ -75,10 +73,10 @@ Once you have installed the needed libraries, saved your API key to your `.env` 
 1. From the terminal run
 
 ```
-streamlit run app/app.py
+streamlit run app/Home.py
 ```
 
-2. In order to test the OCR and Validation, pass in a PDF of ballot inititatives.
+2. In order to test the OCR and Validation, pass in a PDF of signed petitions and a voter records file. You can find fake data versions of each in the `sample_data` folder.
 
 ## App Usage Guide
 
