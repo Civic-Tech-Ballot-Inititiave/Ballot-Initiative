@@ -4,7 +4,6 @@ import os
 import glob
 from loguru import logger
 import time
-# from pdf2image import convert_from_bytes
 from dotenv import load_dotenv
 import streamlit_shadcn_ui as ui
 import json
@@ -22,11 +21,10 @@ logger.remove()
 # loading environmental variables
 load_dotenv('.env', override=True)
 
-# define your open AI API key here; Remember this is a personal notebook! Don't push your API key to the remote repo
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-BALLOT_ICON = "app/petition_check.png"
+# name of uploaded pdf file
 UPLOADED_FILENAME = "ballot.pdf"
 
+# name of repo
 repo_name = 'Ballot-Initiative'
 REPODIR = os.getcwd().split(repo_name)[0] + repo_name
 
