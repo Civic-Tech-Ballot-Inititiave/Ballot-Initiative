@@ -66,7 +66,29 @@ _NOTE: You currently have to use your own API key for the project, but getting o
 If you're new to the project, you should first work through the onboarding notebook.
 
 - [Onboarding Notebook](notebooks/onboarding_notebook.ipynb): Goes through the goals of the projects, provides examples on the OCR, and the fuzzy match validation. At the end outlines some ways to contribute to the existing work.
-   - [Colab Notebook](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)
+  - [Colab Notebook](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)
+
+The current process for going through submitting a ballot initiative is as follows:
+
+- A Ballot Initiative Manager (BIM) comes up with an idea for a Ballot Initiative
+  - They must collect a certain number of valid signatures by a particular date to get their initiative on the ballot
+  - Signatures are considered valid if the name and address match a registered voter
+- A BIM creates a campaign and recruits several Signature Collectors (SC)
+- SCs go out and collect signatures from citizens. Each citizen must handwrite their:
+  - name
+  - address
+  - ward (optional)
+  - signature
+- BIMs receive many pages of signatures from SCs and pay SCs per validated signature
+- BIMs may benefit from the following metrics:
+  - Number of verified signatures collected
+  - Number of verified signatures per ward
+  - Nuber of signatures remaining
+    - Assuming buffer percentage over target amount
+    - Could determine a buffer percentage based on percent invalid signatures collected
+  - Rate of collecting signatures
+  - Expected date to reach goal, assuming current rate
+- After completing all signatures required, the BIM submits the pages of collected signatures to the government
 
 ## Run Application Locally
 
