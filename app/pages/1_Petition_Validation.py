@@ -29,7 +29,7 @@ repo_name = 'Ballot-Initiative'
 REPODIR = os.getcwd().split(repo_name)[0] + repo_name
 
 # load config
-with open(os.path.join(REPODIR, 'config.json'), 'r') as f:
+with open('config.json', 'r') as f:
     config = json.load(f)
 
 
