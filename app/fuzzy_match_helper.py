@@ -15,12 +15,18 @@ from openai import OpenAI, AsyncOpenAI
 import pandas as pd
 import numpy as np
 import io
+import json
 from concurrent.futures import ThreadPoolExecutor
+import streamlit as st
 
 # local environment storage
 repo_name = 'Ballot-Initiative'
 REPODIR = os.getcwd().split(repo_name)[0] + repo_name
 load_dotenv(os.path.join(REPODIR, '.env'), override=True)
+
+# load config
+with open(os.path.join(REPODIR, 'config.json'), 'r') as f:
+    config = json.load(f)
 
 # open ai api key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -42,11 +48,13 @@ def create_select_voter_records(voter_records):
         pd.DataFrame: DataFrame with 'Full Name' and 'Full Address' columns
     """
     # Create full name by combining first and last names
-    name_components = ["First_Name", "Last_Name"] 
+    name_components = ["First_Name", "Last_Name"]
+    voter_records[name_components] = voter_records[name_components].fillna('')
     voter_records["Full Name"] = voter_records[name_components].astype(str).agg(" ".join, axis=1)
 
     # Create full address by combining address components
     address_components = ["Street_Number", "Street_Name", "Street_Type", "Street_Dir_Suffix"]
+    voter_records[address_components] = voter_records[address_components].fillna('')
     voter_records["Full Address"] = voter_records[address_components].astype(str).agg(" ".join, axis=1)
 
     # Return only the columns we need
@@ -101,33 +109,38 @@ def get_matched_name_address(ocr_name, ocr_address, select_voter_records):
     ))
     return sorted(results, key=lambda x: x[2], reverse=True)
 
-def create_ocr_matched_df(ocr_df, select_voter_records, threshold=92.5):
+def create_ocr_matched_df(ocr_df, select_voter_records, threshold=config['BASE_THRESHOLD'], st_bar=None):
     """Optimized DataFrame matching"""
     # Pre-compute numpy arrays
     names = select_voter_records["Full Name"].values
     addresses = select_voter_records["Full Address"].values
     
-    # Process in chunks for better memory management
-    chunk_size = 1000
+    # Process in batches for better memory management
+    batch_size = 1000
     results = []
+
+    print(f"Processing {len(ocr_df)} rows in batches of {batch_size}")
     
-    for chunk_start in tqdm(range(0, len(ocr_df), chunk_size)):
-        chunk = ocr_df.iloc[chunk_start:chunk_start + chunk_size]
+    for batch_start in tqdm(range(0, len(ocr_df), batch_size)):
+        batch = ocr_df.iloc[batch_start:batch_start + batch_size]
         
-        # Process chunk in parallel
+        # Process batch in parallel
         with ThreadPoolExecutor() as executor:
-            chunk_results = list(executor.map(
+            batch_results = list(executor.map(
                 lambda row: get_matched_name_address(
                     row["OCR Name"],
                     row["OCR Address"],
                     select_voter_records
                 ),
-                [row for _, row in chunk.iterrows()]
+                [row for _, row in batch.iterrows()]
             ))
         
         # Extract best matches
-        chunk_matches = [(res[0][0], res[0][1], res[0][2]) for res in chunk_results]
-        results.extend(chunk_matches)
+        batch_matches = [(res[0][0], res[0][1], res[0][2]) for res in batch_results]
+        results.extend(batch_matches)
+
+        if st_bar:
+            st_bar.progress(batch_start / len(ocr_df), text=f"Processing batch {batch_start} out of {len(ocr_df)//batch_size+1} batches")
     
     # Create result DataFrame efficiently
     match_df = pd.DataFrame(

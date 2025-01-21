@@ -17,7 +17,7 @@ import io
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from itertools import islice
-
+import json
 # local environment storage
 repo_name = 'Ballot-Initiative'
 REPODIR = os.getcwd().split(repo_name)[0] + repo_name
@@ -41,7 +41,9 @@ class OCREntry(BaseModel):
 class OCRData(BaseModel):
     Data: List[OCREntry]
 
-
+# load config
+with open(os.path.join(REPODIR, 'config.json'), 'r') as f:
+    config = json.load(f)
 
 # Function is needed to put image in proper format for uploading
 # From: https://stackoverflow.com/questions/77284901/upload-an-image-to-chat-gpt-using-the-api
@@ -55,8 +57,14 @@ def collecting_pdf_encoded_images(file_path):
     Returns list of base64 encoded image strings."""
     
     print("Converting PDF file to Image Format")
-    # Convert PDF pages to images in memory
-    images = convert_from_path(file_path)
+    # Convert PDF pages to images in memory with optimized settings
+    images = convert_from_path(
+        file_path,
+        dpi=100,  # Lower DPI if full resolution isn't needed (default is 200)
+        thread_count=4,  # Utilize multiple CPU cores
+        use_pdftocairo=True,  # Generally faster than alternative
+        grayscale=True,  # Convert to grayscale if color isn't needed
+    )
     
     print("\nCropping Images and Converting to Bytes Objects")
     encoded_image_list = []
@@ -65,13 +73,13 @@ def collecting_pdf_encoded_images(file_path):
     for image in tqdm(images):
         # Get image dimensions
         width, height = image.size
-        
+
         # Crop directly in memory
         cropped = image.crop((
             0,                  # left
-            int(0.385*height),  # top 
+            int(config['TOP_CROP']*height),  # top 
             width,             # right
-            int(0.725*height)  # bottom
+            int(config['BOTTOM_CROP']*height)  # bottom
         ))
         
         # Convert to bytes and encode in one step
@@ -218,7 +226,11 @@ def get_or_create_event_loop():
         return loop
 
 
-def collect_ocr_data(filedir, filename, max_page_num = None, batch_size=10):
+def collect_ocr_data(filedir, 
+                     filename, 
+                     max_page_num = None, 
+                     batch_size=10, 
+                     st_bar=None):
 
     # collecting images
     encoded_images = collecting_pdf_encoded_images(os.path.join(filedir, filename))
@@ -242,6 +254,9 @@ def collect_ocr_data(filedir, filename, max_page_num = None, batch_size=10):
     for i in tqdm(range(0, total_pages, batch_size)):
         batch = encoded_images[i:i + batch_size]
         print(f"\nProcessing batch {i//batch_size + 1} of {(total_pages + batch_size - 1)//batch_size}")
+
+        if st_bar:
+            st_bar.progress(i/total_pages, text="Processing pages {} to {} (of {})".format(i+1, i+batch_size, total_pages))        
         
         # Run async batch processing using the event loop
         batch_results = loop.run_until_complete(process_batch_async(batch))   
@@ -255,13 +270,14 @@ def collect_ocr_data(filedir, filename, max_page_num = None, batch_size=10):
     return full_data
 
 
-    return full_data
-
-
-def create_ocr_df(filedir, filename, max_page_num = None): 
+def create_ocr_df(filedir, filename, max_page_num = None, batch_size=10, st_bar=None): 
 
     # gathering ocr_data
-    ocr_data = collect_ocr_data(filedir, filename, max_page_num = max_page_num)
+    ocr_data = collect_ocr_data(filedir, 
+                                filename, 
+                                max_page_num = max_page_num, 
+                                batch_size=batch_size, 
+                                st_bar=st_bar)
 
     # convert dataframe
     ocr_df = pd.DataFrame(data = ocr_data)
