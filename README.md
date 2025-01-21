@@ -28,15 +28,6 @@ The goal of the Ballot Initiative project is to reduce the manual labor involved
 
 _(NOTE: We welcome code contributions to the repo, but some of the contributions will likely require access to a voter records file. Access to this file is currently limited)_
 
-<!--
-## Current Processing Pipeline
-
-The current approach is to use OCR to extract names and addreses from documents and then use [fuzzy matching](https://en.wikipedia.org/wiki/Approximate_string_matching) algorithms to validate the extracted names with a reference record. This process is depicted below
-
-![Ballot Initiative Depiction](notebooks/ballot_initiative_flow.png)
-
-In this process, we start with a collection of scanned PDFs of signed ballot initiatives. Processing these PDFs a page at a time, we convert them into an image, and then process the image through an OCR function (in this case `gpt-4-vision`). The output of the processing is a dictionary of voter names and addresses. We then compare this dictionary with records we find in a voter database. Getting a close match between the OCR output names and a row in the voter records database, means the signature has been validated (specifically, we provide a score for degree of matching). -->
-
 ## Development Setup
 
 To run any of the notebooks and the app itself. You need to ensure you have the requisite local files, API keys, and libaries.
