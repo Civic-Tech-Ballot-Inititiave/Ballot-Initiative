@@ -1,10 +1,6 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "apt-get update && apt-get install -y python3 python3-pip && python3 -m pip install --upgrade pip && pip3 install -r requirements.txt"
-  },
   "deploy": {
-    "startCommand": "python -m streamlit run app/Home.py --server.address 0.0.0.0 --server.port $PORT --server.fileWatcherType none --browser.gatherUsageStats false --client.toolbarMode minimal"
+    "startCommand": "streamlit run app/Home.py --server.address 0.0.0.0 --server.port $PORT --server.fileWatcherType none --browser.gatherUsageStats false --client.toolbarMode minimal"
   }
 }
