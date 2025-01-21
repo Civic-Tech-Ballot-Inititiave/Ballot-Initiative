@@ -1,20 +1,12 @@
 # needed libraries
 ### structured outputs; replacements
-from typing import List
-from pydantic import BaseModel
-import base64
 import os
 import json
-import time
 from tqdm.notebook import tqdm
-from PIL import Image
-from rapidfuzz import fuzz, process, utils
-from pdf2image import convert_from_path
+from rapidfuzz import fuzz
 from dotenv import load_dotenv
-from openai import OpenAI, AsyncOpenAI
 import pandas as pd
 import numpy as np
-import io
 import json
 from concurrent.futures import ThreadPoolExecutor
 import streamlit as st

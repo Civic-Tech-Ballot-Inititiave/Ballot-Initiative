@@ -5,18 +5,13 @@ from pydantic import BaseModel
 import base64
 import os
 import json
-import time
 from tqdm.notebook import tqdm
-from PIL import Image
-from rapidfuzz import fuzz, process, utils
 from pdf2image import convert_from_path
 from dotenv import load_dotenv
 from openai import OpenAI, AsyncOpenAI
 import pandas as pd
 import io
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from itertools import islice
 import json
 # local environment storage
 repo_name = 'Ballot-Initiative'
@@ -64,6 +59,7 @@ def collecting_pdf_encoded_images(file_path):
         thread_count=4,  # Utilize multiple CPU cores
         use_pdftocairo=True,  # Generally faster than alternative
         grayscale=True,  # Convert to grayscale if color isn't needed
+        poppler_path = r'poppler-24.02.0/Library/bin'
     )
     
     print("\nCropping Images and Converting to Bytes Objects")
