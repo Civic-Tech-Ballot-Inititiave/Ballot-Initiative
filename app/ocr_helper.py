@@ -42,7 +42,7 @@ class OCRData(BaseModel):
     Data: List[OCREntry]
 
 # load config
-with open(os.path.join(REPODIR, 'config.json'), 'r') as f:
+with open('config.json', 'r') as f:
     config = json.load(f)
 
 # Function is needed to put image in proper format for uploading

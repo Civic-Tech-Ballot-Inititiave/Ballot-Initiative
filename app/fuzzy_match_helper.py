@@ -25,7 +25,7 @@ REPODIR = os.getcwd().split(repo_name)[0] + repo_name
 load_dotenv(os.path.join(REPODIR, '.env'), override=True)
 
 # load config
-with open(os.path.join(REPODIR, 'config.json'), 'r') as f:
+with open('config.json', 'r') as f:
     config = json.load(f)
 
 # open ai api key
