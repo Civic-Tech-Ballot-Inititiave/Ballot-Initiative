@@ -107,6 +107,10 @@ st.markdown("<hr style='height:3px;border:none;color:#0066cc;background-color:#0
 
 start_time = None
 
+# Add this with other session state initializations at the top
+if 'processing_time' not in st.session_state:
+    st.session_state.processing_time = None
+
 @st.cache_data
 def load_voter_records(voter_records_file):
     """Cache and process voter records file"""
@@ -223,7 +227,6 @@ with col1:
     if voter_records is not None:
         try:
             df = load_voter_records(voter_records)
-            full_name_address_df = create_select_voter_records(df)
 
             required_columns = ["First_Name", "Last_Name", "Street_Number", 
                              "Street_Name", "Street_Type", "Street_Dir_Suffix"]
@@ -359,6 +362,8 @@ with col2:
                     st.session_state.processed_results = ocr_matched_df
                     matching_bar.empty()
                     st.session_state.is_processing = False
+                    # Store processing time in session state
+                    st.session_state.processing_time = time.time() - start_time
                     
                 except InterruptedError as e:
                     st.warning(str(e))
@@ -381,9 +386,8 @@ if st.session_state.get('processed_results') is not None:
     results_df["Valid"] = results_df["Match Score"] >= config['BASE_THRESHOLD']
     
     tabs = st.tabs(["📊 Data Table", "📈 Statistics"])
-    if start_time:
-        processing_time = time.time() - start_time
-        st.caption(f"Processing time: {processing_time:.2f} seconds")
+    if st.session_state.processing_time:
+        st.caption(f"Processing time: {st.session_state.processing_time:.2f} seconds")
 
     with tabs[0]:
         edited_df = st.data_editor(
