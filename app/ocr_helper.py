@@ -6,13 +6,14 @@ import base64
 import os
 import json
 from tqdm.notebook import tqdm
-from pdf2image import convert_from_path
+# from pdf2image import convert_from_path
 from dotenv import load_dotenv
 from openai import OpenAI, AsyncOpenAI
 import pandas as pd
 import io
 import asyncio
 import json
+import fitz  # Add this import at the top with other imports
 # local environment storage
 repo_name = 'Ballot-Initiative'
 REPODIR = os.getcwd().split(repo_name)[0] + repo_name
@@ -52,38 +53,40 @@ def collecting_pdf_encoded_images(file_path):
     Returns list of base64 encoded image strings."""
     
     print("Converting PDF file to Image Format")
-    # Convert PDF pages to images in memory with optimized settings
-    images = convert_from_path(
-        file_path,
-        dpi=100,  # Lower DPI if full resolution isn't needed (default is 200)
-        thread_count=4,  # Utilize multiple CPU cores
-        use_pdftocairo=True,  # Generally faster than alternative
-        grayscale=True,  # Convert to grayscale if color isn't needed
-        poppler_path = r'poppler-24.02.0/Library/bin'
-    )
-    
-    print("\nCropping Images and Converting to Bytes Objects")
     encoded_image_list = []
     
+    # Open PDF document
+    pdf_document = fitz.open(file_path)
+    
+    print("\nCropping Images and Converting to Bytes Objects")
     # Process each page
-    for image in tqdm(images):
-        # Get image dimensions
-        width, height = image.size
-
-        # Crop directly in memory
-        cropped = image.crop((
-            0,                  # left
-            int(config['TOP_CROP']*height),  # top 
-            width,             # right
-            int(config['BOTTOM_CROP']*height)  # bottom
-        ))
+    for page in tqdm(pdf_document):
+        # Get page dimensions
+        rect = page.rect
+        width = rect.width
+        height = rect.height
         
-        # Convert to bytes and encode in one step
-        with io.BytesIO() as bio:
-            cropped.save(bio, format='JPEG')
-            encoded = base64.b64encode(bio.getvalue()).decode('utf-8')
-            encoded_image_list.append(encoded)
-
+        # Calculate crop rectangle
+        crop_rect = fitz.Rect(
+            0,                                  # left
+            height * config['TOP_CROP'],        # top
+            width,                              # right
+            height * config['BOTTOM_CROP']      # bottom
+        )
+        
+        # Get pixmap with cropped area and grayscale
+        pix = page.get_pixmap(
+            matrix=fitz.Matrix(1, 1),  # zoom factors of 1 = 72 dpi
+            colorspace="gray",         # convert to grayscale
+            clip=crop_rect            # crop to our target area
+        )
+        
+        # Convert to bytes and encode
+        img_bytes = pix.tobytes(output="jpeg")
+        encoded = base64.b64encode(img_bytes).decode('utf-8')
+        encoded_image_list.append(encoded)
+    
+    pdf_document.close()
     return encoded_image_list
 
 def extract_from_encoding(base64_image):

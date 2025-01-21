@@ -4,13 +4,15 @@ import os
 import glob
 from loguru import logger
 import time
-from pdf2image import convert_from_bytes
+# from pdf2image import convert_from_bytes
 from dotenv import load_dotenv
 import streamlit_shadcn_ui as ui
 import json
+import fitz  # PyMuPDF
+from PIL import Image
 
-from ocr_helper import collecting_pdf_encoded_images, extract_from_encoding, add_metadata, create_ocr_df
-from fuzzy_match_helper import create_select_voter_records, get_matched_name_address, create_ocr_matched_df
+from ocr_helper import create_ocr_df
+from fuzzy_match_helper import create_select_voter_records, create_ocr_matched_df
 
 
 # setting up logger for benchmarking, comment in to write logs to data/logs/benchmark_logs.log
@@ -128,10 +130,13 @@ def load_signatures(signatures_file):
     with open(pdf_path, 'wb') as f:
         f.write(pdf_bytes)
     
-    # Convert first page for preview
-    images = convert_from_bytes(pdf_bytes, first_page=1, last_page=1,poppler_path = r'poppler-24.02.0/Library/bin')
-    preview_image = images[0]
-    num_pages = len(images)
+    # Convert first page for preview using PyMuPDF
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    first_page = doc[0]
+    pix = first_page.get_pixmap()
+    preview_image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+    num_pages = len(doc)
+    doc.close()
     
     return pdf_bytes, preview_image, num_pages
 
