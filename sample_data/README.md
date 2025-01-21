@@ -4,7 +4,7 @@ This directory contains sample data files used for testing and development of th
 
 ## Files
 
-### `fake_voter_records.csv`
+#### `fake_voter_records.csv`
 
 A sample CSV file containing 100,000 rows of synthetic voter data with the following columns:
 
@@ -15,23 +15,23 @@ A sample CSV file containing 100,000 rows of synthetic voter data with the follo
 - `Street_Type`
 - `Street_Dir_Suffix`
 
-### `spurious_signers.csv`
+#### `spurious_signers.csv`
 
 A sample CSV file containing 100 rows of synthetic voter data. The columns are the same as the `fake_voter_records.csv` file.
 
 However, the "voters" in this file are ones who are NOT in the `fake_voter_records.csv` file, and thus represent spurious signatures (i.e., non-registered voters) that the algorithm should not match.
 
-### `all_petition_signers.csv`
+#### `all_petition_signers.csv`
 
 A CSV file containing 400 randomly selected rows from the `fake_voter_records.csv` file, and all of the rows from the `spurious_voter_records.csv` file. The columns are the same as the `fake_voter_records.csv` file.
 
 This file contains ~500 sample records and is used to test the signature validation and matching functionality. The data is randomly generated and does not represent real voter information.
 
-### `fake_signed_petitions.pdf`
+#### `fake_signed_petitions.pdf`
 
 A sample PDF file containing 100 pages of simulated ballot initiative petition signatures from the people listed in `all_petition_signers.csv`. This file is used for testing the OCR functionality of the application. The PDF contains scanned images of signatures and voter information in a format similar to real ballot initiative petitions.
 
-### `fake_signed_petitions_1-10.pdf`
+#### `fake_signed_petitions_1-10.pdf`
 
 The first 10 pages of the `fake_signed_petitions.pdf` file. Used for quicker processing.
 
