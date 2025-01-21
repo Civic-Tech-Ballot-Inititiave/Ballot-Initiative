@@ -129,7 +129,7 @@ def load_signatures(signatures_file):
         f.write(pdf_bytes)
     
     # Convert first page for preview
-    images = convert_from_bytes(pdf_bytes, first_page=1, last_page=2)
+    images = convert_from_bytes(pdf_bytes, first_page=1, last_page=1)
     preview_image = images[0]
     num_pages = len(images)
     
