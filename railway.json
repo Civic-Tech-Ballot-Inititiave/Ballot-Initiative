@@ -1,6 +1,6 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "deploy": {
-    "startCommand": "streamlit run app/Home.py --server.address 0.0.0.0 --server.port $PORT --server.fileWatcherType none --browser.gatherUsageStats false --client.toolbarMode minimal"
+    "startCommand": "streamlit run app/Home.py --server.address 0.0.0.0 --server.port $PORT --server.fileWatcherType none --server.enableXsrfProtection false --browser.gatherUsageStats false --client.toolbarMode minimal"
   }
 }
