@@ -105,9 +105,13 @@ st.markdown("<hr style='height:3px;border:none;color:#0066cc;background-color:#0
 
 start_time = None
 
-# Add this with other session state initializations at the top
-if 'processing_time' not in st.session_state:
-    st.session_state.processing_time = None
+# Add these session state initializations near the top with other session state setup
+if 'is_processing_complete' not in st.session_state:
+    st.session_state.is_processing_complete = False
+if 'current_progress' not in st.session_state:
+    st.session_state.current_progress = 0
+if 'progress_text' not in st.session_state:
+    st.session_state.progress_text = ""
 
 @st.cache_data
 def load_voter_records(voter_records_file):
@@ -158,7 +162,7 @@ with st.sidebar:
             - Street_Name
             - Street_Type
             - Street_Dir_Suffix
-        - Download a sample of fake voter records [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_voter_records.csv)
+        - *Example: Download a sample of fake voter records [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_voter_records.csv).*
         """)
     
     with st.expander("2️⃣ Upload Signatures", expanded=False):
@@ -166,7 +170,7 @@ with st.sidebar:
         - PDF format only
         - Clear, legible scans
         - One signature per line
-        - Download a sample of fake signed petitions [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_signed_petitions_1-10.pdf)
+        - *Example: Download a sample of fake signed petitions [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_signed_petitions_1-10.pdf).*
         """)
     
     with st.expander("3️⃣ Process & Review", expanded=False):
@@ -174,6 +178,7 @@ with st.sidebar:
         - Click 'Process Files'
         - Review matches
         - Download CSV results
+        - *Note: Moving to the 'Home' page will restart processing.*
         """)
 
     with st.expander("4️⃣ Clear Files", expanded=False):
@@ -303,72 +308,99 @@ with col2:
                 st.session_state.is_processing = True
                 st.rerun()
         else:
-            if st.button("⚠️ Cancel Processing", type="secondary", use_container_width=True):
+            if st.button("⚠️ Cancel Processing", type="secondary", use_container_width=True, help="Note: Moving to the 'Home' page will restart processing."):
+                st.caption("Processing cancelled by user")
                 st.session_state.processing_cancelled = True
                 st.session_state.is_processing = False
+                st.session_state.is_processing_complete = False
+                st.session_state.processing_cancelled = False
+                st.session_state.current_progress = 0
+                st.session_state.progress_text = ""
                 st.rerun()
                 
         # Process files if in processing state
-        if st.session_state.get('is_processing', False):
+        if st.session_state.get('is_processing', False) and not st.session_state.is_processing_complete:
             start_time = time.time()
             with st.spinner("Processing signatures for validation..."):
                 try:
-                    matching_bar = st.progress(0, text="Loading PDF of signed petitions...")
+                    matching_bar = st.progress(st.session_state.current_progress, 
+                                            text=st.session_state.progress_text or "Loading PDF of signed petitions...")
                     
                     # Check for cancellation
                     if st.session_state.processing_cancelled:
                         st.warning("Processing cancelled by user")
                         st.session_state.is_processing = False
+                        st.session_state.is_processing_complete = False
                         st.session_state.processing_cancelled = False
+                        st.session_state.current_progress = 0
+                        st.session_state.progress_text = ""
                         st.rerun()
-                        
-                    # Rest of your processing code...
+
+                    # Update progress state as processing continues
+                    st.session_state.current_progress = 0.0
+                    st.session_state.progress_text = "Converting PDF to images..."
+                    matching_bar.progress(st.session_state.current_progress, text=st.session_state.progress_text)
+                    
                     pdf_full_path = glob.glob(os.path.join('temp', UPLOADED_FILENAME))[0]
 
-                    matching_bar.progress(0.0, text="Converting PDF to images...")
-                    time.sleep(2)
                     if st.session_state.processing_cancelled:
                         raise InterruptedError("Processing cancelled by user")
 
+                    st.session_state.current_progress = 0.3
+                    matching_bar.progress(st.session_state.current_progress, text=st.session_state.progress_text)
+                    
                     ocr_df = create_ocr_df(filedir='temp', 
                                          filename=UPLOADED_FILENAME, 
                                          st_bar=matching_bar)
+                    
                     if st.session_state.processing_cancelled:
                         raise InterruptedError("Processing cancelled by user")
 
-                    matching_bar.progress(0.9, text="Compiling Voter Record Data")
-                    time.sleep(2)
-                    if st.session_state.processing_cancelled:
-                        raise InterruptedError("Processing cancelled by user")
+                    st.session_state.current_progress = 0.9
+                    st.session_state.progress_text = "Compiling Voter Record Data"
+                    matching_bar.progress(st.session_state.current_progress, text=st.session_state.progress_text)
 
                     select_voter_records = create_select_voter_records(st.session_state.voter_records_df)
+                    
                     if st.session_state.processing_cancelled:
                         raise InterruptedError("Processing cancelled by user")
 
-                    matching_bar.progress(0.95, text="Matching petition signatures to voter records...")
-                    time.sleep(2)
-                    if st.session_state.processing_cancelled:
-                        raise InterruptedError("Processing cancelled by user")
+                    st.session_state.current_progress = 0.95
+                    st.session_state.progress_text = "Matching petition signatures to voter records..."
+                    matching_bar.progress(st.session_state.current_progress, text=st.session_state.progress_text)
 
                     ocr_matched_df = create_ocr_matched_df(
                         ocr_df, 
                         select_voter_records, 
                         threshold=config['BASE_THRESHOLD']
                     )
-                    matching_bar.progress(1.0, text="Complete!")
+                    
+                    st.session_state.current_progress = 1.0
+                    st.session_state.progress_text = "Complete!"
+                    matching_bar.progress(st.session_state.current_progress, text=st.session_state.progress_text)
                     
                     st.session_state.processed_results = ocr_matched_df
                     matching_bar.empty()
                     st.session_state.is_processing = False
-                    # Store processing time in session state
+                    st.session_state.is_processing_complete = True
                     st.session_state.processing_time = time.time() - start_time
+                    st.session_state.current_progress = 0
+                    st.session_state.progress_text = ""
+                    st.rerun()
                     
                 except InterruptedError as e:
                     st.warning(str(e))
                     matching_bar.empty()
+                    st.session_state.is_processing = False
+                    st.session_state.is_processing_complete = False
+                    st.session_state.current_progress = 0
+                    st.session_state.progress_text = ""
                 except Exception as e:
                     st.error(f"Error during processing: {str(e)}")
                     st.session_state.is_processing = False
+                    st.session_state.is_processing_complete = False
+                    st.session_state.current_progress = 0
+                    st.session_state.progress_text = ""
 
 @st.cache_data
 def convert_df(df):
