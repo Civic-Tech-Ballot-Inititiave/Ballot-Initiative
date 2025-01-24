@@ -24,14 +24,14 @@ st.image("app/ballot_initiative_schematic.png", caption="Core process for valida
 
 st.markdown(
     """    
-Signature verification is typically a tedious process that requires human reviewers to inspect submitted signatures one by one, searching a voter database for the associated voter, and then ensuring the voter was registered at the time of signing. This process requires hundreds of person-hours and takes resources away from the more impactful work of advocating for the ballot measures themselves. 
+Signature verification is typically a tedious process that requires human reviewers to inspect submitted signatures one by one, searching a voter database for the associated voter, and then ensuring the voter was registered at the time of signing. This process takes hundreds of person-hours and moves resources away from the more impactful work of advocating for the ballot measures themselves. 
 
-There is available software that can perform signature verification, but it is generally expensive and inaccessible to more grassroots organizations. So by providing a cheap and easy way to automate this process, we hope to help even the smallest organizations get their ballot measures off the ground.
+There is software that can perform signature verification, but it is generally expensive and inaccessible to more grassroots organizations. By building a cheap, quick, and accurate way to automate this process, we hope to help even the smallest organizations get their ballot measures off the ground.
 
  ### The Builders
- This project was built by the members of [Civic Tech DC](https://www.civictechdc.org/), a group of tech-savvy volunteers passionate about building software for the public good. 
+ This project was created by the members of [Civic Tech DC](https://www.civictechdc.org/), a group of tech-savvy volunteers passionate about building software for the public good. 
 
- Because of our experience with the DC ballot initiative process, we built the current version of the application for **Washington DC petitions of the type [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_signed_petitions_1-10.pdf)**. However, the code is open source and it is easy to modify itfor your use case. Contact the Civic Tech DC team if you have questions about implementing it for your organization.
+ Because of our experience with the DC ballot initiative process, we built the current version of the application for **Washington DC petitions of the type [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_signed_petitions_1-10.pdf)**. However, the code is open source and it is easy to modify it for your use case. Contact the Civic Tech DC team if you have questions about implementing it for your organization.
 
 
  ### Want to learn more?
