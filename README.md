@@ -1,15 +1,23 @@
-# Ballot-Initiative
+# Ballot Initiative
 
-![Ballot Initiative Depiction](notebooks/ballot_initiative_flow.png)
+An open-source tool to automate signature validation for ballot initiatives using OCR and fuzzy matching.
+
+> **Note:** Tool is tailored to DC petitions ([example](sample_data/fake_signed_petitions.pdf)), and would need to be modified to fit other formats.
+
+![Ballot Initiative Depiction](app/streamlit-frontend.png)
 
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Development Setup](#dev-setup)
-3. [Learning About Project](#learning-about-project)
-4. [Run Application Locally](#run-application-locally)
-5. [App Usage Guide](#app-usage-guide)
-6. [Extra Resources](#extra-resources)
+   - [Core Approach](#core-approach)
+2. [Getting Started](#getting-started)
+   - [Prerequisites](#prerequisites)
+   - [Installation](#installation)
+   - [Running the Application](#running-the-application)
+3. [Project Documentation](#project-documentation)
+   - [Learning Materials](#learning-materials)
+   - [Additional Resources](#additional-resources)
+4. [License](#license)
 
 ## Introduction
 
@@ -26,57 +34,99 @@ The process of checking signatures for ballot initiatives is time consuming and 
 
 The goal of the Ballot Initiative project is to reduce the manual labor involved in the signature-checking process by automating the simplest aspects of that process. This repo collects some preliminary versions of code that allow users to upload PDF files of ballot initatives signatures and to validate whether these signatures are connected to names in a voter records file.
 
-_(NOTE: We welcome code contributions to the repo, but some of the contributions will likely require access to a voter records file. Access to this file is currently limited)_
+### Core Approach
 
-## Development Setup
+![Core Algorithm](app/ballot_initiative_schematic.png)
 
-To run any of the notebooks and the app itself. You need to ensure you have the requisite local files, API keys, and libaries.
+1. **Extraction:** Forms in PDF format are processed through an OCR engine (using [gpt-4o-mini](https://platform.openai.com/docs/models/gpt-4o-mini)) to crop text sections and extract data.
 
-1. After cloning the repository, from the terminal run
+2. **Identification:** The engine identifies and extracts key information (tailored to DC Ballot Initiatives) related to validating signatures:
 
+   - Names
+   - Addresses
+   - Wards
+   - Dates
+
+3. **Matching:** Extracted data names and addresses are passed through a Fuzzy Match engine (using [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance)) that compares against a CSV of voter records. Harmonic mean of the two scores is used as the net validation score.
+
+4. **Output:** System outputs a table of results containing:
+   - Name (OCR and Record Match)
+   - Address (OCR and Record Match)
+   - Validation score
+   - Validation status
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.8 or higher
+- OpenAI API key
+- PDF files of ballot initiative signatures
+  - Use fake data in [`sample_data/fake_signed_petitions.pdf`](sample_data/fake_signed_petitions.pdf) folder to test.
+- Voter records file (access is limited - see note below)
+  - Use fake data in [`sample_data/fake_voter_records.csv`](sample_data/fake_voter_records.csv) folder to test.
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-org/ballot-initiative.git
+cd ballot-initiative
 ```
+
+2. Create and activate a virtual environment:
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+```
+
+3. Install dependencies:
+
+```bash
 pip install -r requirements.txt
 ```
 
-to install the required libraries
+4. Set up your environment:
+   - Create a `.env` file in the `app` folder
+   - [Get an OpenAI API key](https://www.howtogeek.com/885918/how-to-get-an-openai-api-key/) if you don't have one
+   - Add your OpenAI API key:
+     ```
+     OPENAI_API_KEY=<YOUR_API_KEY>
+     ```
 
-2. Create a `.env` file in the `app` folder with a defined `OPENAI_API_KEY`.
+### Running the Application
 
-```
-#.env file contents
+1. Start the Streamlit app:
 
-OPENAI_API_KEY = <YOUR API KEY>
-```
-
-_NOTE: You currently have to use your own API key for the project, but getting one is quite easy. Check out this guide [("How to get an OpenAI API Key for ChatGPT")](https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt) to learn how to get your own API key._
-
-## Learning About Project
-
-If you're new to the project, you should first work through the onboarding notebook.
-
-- [Onboarding Notebook](notebooks/2025-01-20-onboarding_notebook.ipynb): Goes through the goals of the projects, provides examples on the OCR, and the fuzzy match validation. At the end outlines some ways to contribute to the existing work.
-  - [Colab Notebook](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)
-
-## Run Application Locally
-
-Once you have installed the needed libraries, saved your API key to your `.env` file, and saved the `raw_feb_23_city_wide.csv` file to the `data` folder. You can now run the app locally. From the library installations, you should have `streamlit` available on the command line. To start the app locally
-
-1. From the terminal run
-
-```
+```bash
 streamlit run app/Home.py
 ```
 
-2. In order to test the OCR and Validation, pass in a PDF of signed petitions and a voter records file. You can find fake data versions of each in the `sample_data` folder.
+2. Upload your files:
+   - PDF of signed petitions
+   - Voter records file
+   - Sample data is available in the `sample_data` folder for testing
 
-## App Usage Guide
+## Project Documentation
 
-_This section is currently in development. Usage instructions will be added._
+### Learning Materials
 
-## Extra Resources
+- **[Onboarding Notebook](notebooks/2025-01-20-onboarding_notebook.ipynb)**/**[Colab Version](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)**: Comprehensive guide covering project goals and background, OCR implementation examples, and fuzzy matching implementation examples
 
-Here are some additional resources to help you better contribute to the repository.
+### Additional Resources
 
-- [Streamlit: Getting Started](https://docs.streamlit.io/get-started) Currently the "application" is run in streamlit, a framework for doing quick proof-of-concepts entirely in Python. If you want to learn more about streamlit to contribute to the current version of the application.
-- [DC Initiative and Referendum Process](https://code.dccouncil.gov/us/dc/council/code/sections/1-1001.16): Describes the process by which issues are placed on the ballot and how the BOE verifies signatures.
-- ["They want to change how D.C. votes — one signature at a time"](https://www.washingtonpost.com/dc-md-va/2024/05/22/dc-voting-ballot-initiative-signatures/) Washington Post Article describing the slow process of collecting and verifying signatures. Provides context for why OCR is valuable.
+- [Streamlit Documentation](https://docs.streamlit.io/get-started) - Framework used for the application interface
+- [DC Initiative and Referendum Process](https://code.dccouncil.gov/us/dc/council/code/sections/1-1001.16) - Official process documentation
+- [Washington Post Article](https://www.washingtonpost.com/dc-md-va/2024/05/22/dc-voting-ballot-initiative-signatures/) - Context and background
+
+## License
+
+This project is open-sourced under the MIT License - see the [LICENSE](LICENSE) file for details.
