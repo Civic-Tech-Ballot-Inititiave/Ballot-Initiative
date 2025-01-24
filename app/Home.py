@@ -31,7 +31,7 @@ There is software that can perform signature verification, but it is generally e
  ### The Builders
  This project was created by the members of [Civic Tech DC](https://www.civictechdc.org/), a group of tech-savvy volunteers passionate about building software for the public good. 
 
- Because of our experience with the DC ballot initiative process, we built the current version of the application for **Washington DC petitions of the type [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_signed_petitions_1-10.pdf)**. However, the code is open source and it is easy to modify it for your use case. Contact the Civic Tech DC team if you have questions about implementing it for your organization.
+ Because of our experience with the DC ballot initiative process, we built the current version of the application for **Washington DC petitions of the type [here](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/sample_data/fake_signed_petitions_1-10.pdf)**. However, the code is open source and is easy to modify for your use case. Contact the Civic Tech DC team if you have questions about implementing it for your organization.
 
 
  ### Want to learn more?
