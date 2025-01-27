@@ -119,7 +119,7 @@ streamlit run app/Home.py
 
 ### Learning Materials
 
-- **[Onboarding Notebook](notebooks/2025-01-20-onboarding_notebook.ipynb)**/**[Colab Version](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb)**: Comprehensive guide covering project goals and background, OCR implementation examples, and fuzzy matching implementation examples
+- [Onboarding Notebook](notebooks/2025-01-20-onboarding_notebook.ipynb) [(Colab)](https://githubtocolab.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/notebooks/onboarding_notebook_colab.ipynb): Comprehensive guide covering project goals and background, OCR implementation examples, and fuzzy matching implementation examples
 
 ### Additional Resources
 

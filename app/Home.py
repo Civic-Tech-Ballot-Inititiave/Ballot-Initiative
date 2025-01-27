@@ -45,7 +45,7 @@ st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: #666;'>"
     "© 2024 Ballot Initiative Project | "
-    "<a href='#'>Privacy Policy</a> | "
+    # "<a href='#'>Privacy Policy</a> | "
     "<a href='https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/LICENSE.md'>Terms of Use</a>"
     "</div>", 
     unsafe_allow_html=True
