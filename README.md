@@ -95,9 +95,10 @@ pip install -r requirements.txt
 ```
 
 4. Set up your environment:
-   - Create a `.env` file in the `app` folder
+   - Create a `.env` file in the project root folder.
+   - Replicate the format shown in the `.env.example` file.
    - [Get an OpenAI API key](https://www.howtogeek.com/885918/how-to-get-an-openai-api-key/) if you don't have one
-   - Add your OpenAI API key:
+   - Add your OpenAI API key to the `.env` file:
      ```
      OPENAI_API_KEY=<YOUR_API_KEY>
      ```
