@@ -15,7 +15,7 @@ from datetime import datetime
 
 # local environment storage
 repo_name = 'Ballot-Initiative'
-REPODIR = os.getcwd().split(repo_name)[0] + repo_name
+REPODIR = os.getcwd()
 load_dotenv(os.path.join(REPODIR, '.env'), override=True)
 
 # load config
