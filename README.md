@@ -57,6 +57,8 @@ The goal of the Ballot Initiative project is to reduce the manual labor involved
 
 ## Getting Started
 
+An alternate approach to get up and running is to use [Github Codespaces](https://github.com/features/codespaces) to run this project in a dev container. Instructions can be found [here](.devcontainer/Codespaces.md).
+
 ### Prerequisites
 
 - Python 3.8 or higher
