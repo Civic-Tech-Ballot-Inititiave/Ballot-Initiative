@@ -44,7 +44,7 @@ There is software that can perform signature verification, but it is generally e
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: #666;'>"
-    "© 2024 Ballot Initiative Project | "
+    "© 2025 Ballot Initiative Project | "
     # "<a href='#'>Privacy Policy</a> | "
     "<a href='https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/blob/main/LICENSE.md'>Terms of Use</a>"
     "</div>", 

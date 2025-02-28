@@ -25,7 +25,7 @@ Instead of installing **Ballot Initiative** on your local machine, you can run i
 
 ![Secrets](Secrets.png)
 
-3. Add a Secret**  
+3. Add a **Secret**  
 * In the **"Name"** field, enter `OPENAI_API_KEY`.  
 * In the **"Value"** field, paste your API key.
 * Click **"Add secret"** to save it.  
