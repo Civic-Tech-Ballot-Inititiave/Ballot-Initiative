@@ -73,7 +73,7 @@ An alternate approach to get up and running is to use [Github Codespaces](https:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-org/ballot-initiative.git
+git clone https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative.git
 cd ballot-initiative
 ```
 
