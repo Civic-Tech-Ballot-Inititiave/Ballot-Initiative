@@ -61,8 +61,11 @@ An alternate approach to get up and running is to use [Github Codespaces](https:
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- OpenAI API key
+- Python 3.12
+- OpenAI API key[^1]
+
+[^1]: The OpenAI free tier has a low rate limit. To increase the rate limit, you'll have to have a form payment on your OpenAI account. [See this page for details](https://platform.openai.com/docs/guides/rate-limits?tier=tier-one)
+
 - PDF files of ballot initiative signatures
   - Use fake data in [`sample_data/fake_signed_petitions.pdf`](sample_data/fake_signed_petitions.pdf) folder to test.
 - Voter records file (access is limited - see note below)
@@ -70,12 +73,13 @@ An alternate approach to get up and running is to use [Github Codespaces](https:
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repository[^2]:
 
 ```bash
-git clone https://github.com/your-org/ballot-initiative.git
+git clone https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative.git
 cd ballot-initiative
 ```
+  [^2]: Optionally you may want to [fork this repository](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/fork)
 
 2. Create and activate a virtual environment:
 
