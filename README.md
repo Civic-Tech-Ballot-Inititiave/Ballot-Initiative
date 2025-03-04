@@ -62,9 +62,9 @@ An alternate approach to get up and running is to use [Github Codespaces](https:
 ### Prerequisites
 
 - Python 3.12
-- OpenAI API key[^2]
+- OpenAI API key[^1]
 
-[^2]: The OpenAI free tier has a low rate limit. To increase the rate limit, you'll have to have a form payment on your OpenAI account. [See this page for details](https://platform.openai.com/docs/guides/rate-limits?tier=tier-one)
+[^1]: The OpenAI free tier has a low rate limit. To increase the rate limit, you'll have to have a form payment on your OpenAI account. [See this page for details](https://platform.openai.com/docs/guides/rate-limits?tier=tier-one)
 
 - PDF files of ballot initiative signatures
   - Use fake data in [`sample_data/fake_signed_petitions.pdf`](sample_data/fake_signed_petitions.pdf) folder to test.
