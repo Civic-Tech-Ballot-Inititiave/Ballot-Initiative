@@ -122,6 +122,16 @@ streamlit run app/Home.py
    - Voter records file
    - Sample data is available in the `sample_data` folder for testing
 
+### Running Project Tests
+
+1. Navigate to the project root folder
+2. Activate the virtual environment
+3. Run the following command:
+
+```bash
+python pytest
+```
+
 ## Project Documentation
 
 ### Learning Materials
