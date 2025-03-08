@@ -1,0 +1,19 @@
+# An example of the settings.toml file to configure for the application.
+# DO NOT MODIFY OR DELETE THIS FILE.
+# Make a copy and save as "settings.toml". Then edit the copy.
+
+# Select the OCR engine to use from the list of available engines below
+selected_ocr_engine = "open_ai"
+
+# Credentials for the OCR engines
+[open_ai]
+model = "default" # Uses default model defined within the OCR processor. Can be overridden by the user.
+api_key = "Your OpenAI API key"
+
+[mistral_ai]
+model = "default"
+api_key = "Your Mistral API key"
+
+[gemini_ai]
+model = "default"
+api_key = "Your Gemini API key"
