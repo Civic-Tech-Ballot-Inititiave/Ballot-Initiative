@@ -1,5 +1,7 @@
 # Ballot Initiative
 
+[![Build status badge](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/actions/workflows/main.yml/badge.svg)](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/actions/workflows/main.yml)
+
 An open-source tool to automate signature validation for ballot initiatives using OCR and fuzzy matching.
 
 > **Note:** Tool is tailored to DC petitions ([example](sample_data/fake_signed_petitions.pdf)), and would need to be modified to fit other formats.
