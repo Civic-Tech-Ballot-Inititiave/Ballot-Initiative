@@ -1,13 +1,14 @@
 # needed libraries
 ### structured outputs; replacements
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import base64
 import os
 import json
 from tqdm.notebook import tqdm
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
 import pandas as pd
 import asyncio
 import fitz  # Add this import at the top with other imports
@@ -51,10 +52,13 @@ HELICONE_PERSONAL_API_KEY = os.getenv("HELICONE_PERSONAL_API_KEY")
 ###
 
 class OCREntry(BaseModel):
-    Name: str
-    Address: str
-    Date: str
-    Ward: int
+
+    """Ballot signatory data"""
+
+    Name: str = Field(description="Name of the petition signer")
+    Address: str = Field(description="Address of the petition signatory")
+    Date: str = Field(description="Date of the signed")
+    Ward: int = Field(description="The area or 'Ward' that the signer belongs to")
 
 
 class OCRData(BaseModel):
@@ -122,17 +126,15 @@ async def extract_from_encoding_async(base64_image: str) -> List[dict]:
 
     try:
         # open AI client definition 
-        client = AsyncOpenAI(api_key=OPENAI_API_KEY,
-                              base_url="https://oai.helicone.ai/v1",  # Set the API endpoint
-                              default_headers= {  # Optionally set default headers or set per request (see below)
+        client = ChatOpenAI(api_key=OPENAI_API_KEY,
+                          temperature=0.0,
+                   openai_api_base="https://oai.helicone.ai/v1", 
+                   model="gpt-4o-mini",
+                   default_headers={  # Optionally set default headers or set per request (see below)
                               "Helicone-Auth": f"Bearer {HELICONE_PERSONAL_API_KEY}", }
-                              )                    
-
+                              ).with_structured_output(OCRData)
         # prompt message
         messages = [
-              {
-                "role": "user", 
-                "content": [
                   {
                     "type": "text",
                     "text": """Using the written text in the image create a list of dictionaries where each dictionary consists of keys 'Name', 'Address', 'Date', and 'Ward'. Fill in the values of each dictionary with the correct entries for each key. Write all the values of the dictionary in full. Only output the list of dictionaries. No other intro text is necessary."""
@@ -147,19 +149,16 @@ async def extract_from_encoding_async(base64_image: str) -> List[dict]:
                       "url": f"data:image/jpeg;base64,{base64_image}"
                     }
                   }
-                ]
-              }
-            ]    
+            ]
 
-        results = await client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
-                messages=messages,
-                temperature=0.0,
-                response_format= OCRData
-                )     
 
-        # parsing results
-        parsed_results = results.choices[0].message.parsed    
+        results = await client.ainvoke(
+            [HumanMessage(
+                content = messages
+            )]
+        )
+
+        parsed_results = results
 
         # dictionary results
         parsed_list = json.loads(parsed_results.json())['Data']
