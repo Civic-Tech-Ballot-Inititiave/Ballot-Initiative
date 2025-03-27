@@ -124,7 +124,7 @@ def create_ocr_client() ->  Runnable:
     Create an OpenAI client with the appropriate settings.
 
     Returns:
-        Runnable[LanguageModelInput, _DictOrPydantic]: An OpenAI client.
+        Runnable: An AI client for OCR extraction.
     """
 
     ocr_config = load_settings().selected_config
@@ -153,9 +153,7 @@ def create_ocr_client() ->  Runnable:
                 model=ocr_config.model,
             ).with_structured_output(OCRData)
 
-    logger.debug(f"Creating client {client}")
-
-    print(f"\nUsing {ocr_config} for OCR extraction\n")
+    logger.debug(f"Creating client {ocr_config}")
     
     return client
 
