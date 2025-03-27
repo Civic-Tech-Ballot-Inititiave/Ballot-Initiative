@@ -8,13 +8,20 @@ import json
 from tqdm.notebook import tqdm
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langchain_mistralai import ChatMistralAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
+from langchain_core.runnables import (
+    Runnable,
+)
 import pandas as pd
 import asyncio
 import fitz  # Add this import at the top with other imports
 import streamlit as st
 import logging
 from datetime import datetime
+
+from settings_repo import GeminiAiConfig, MistralAiConfig, OpenAiConfig, load_settings
 
 # Set up logging
 log_directory = "logs"
@@ -111,6 +118,47 @@ def collecting_pdf_encoded_images(file_path : str) -> List[str]:
     logger.info(f"Completed PDF conversion. Generated {len(encoded_image_list)} encoded images")
     return encoded_image_list
 
+
+def create_ocr_client() ->  Runnable:
+    """
+    Create an OpenAI client with the appropriate settings.
+
+    Returns:
+        Runnable[LanguageModelInput, _DictOrPydantic]: An OpenAI client.
+    """
+
+    ocr_config = load_settings().selected_config
+
+    client: Runnable = None
+    
+    match ocr_config:
+        case OpenAiConfig():
+            client = ChatOpenAI(api_key=ocr_config.api_key,
+                        temperature=0.0,
+                        openai_api_base="https://oai.helicone.ai/v1", 
+                        model=ocr_config.model,
+                        default_headers={  # Optionally set default headers or set per request (see below)
+                            "Helicone-Auth": f"Bearer {ocr_config.helicone_api_key}", }
+                        ).with_structured_output(OCRData)
+        case MistralAiConfig():
+            client = ChatMistralAI(
+                api_key=ocr_config.api_key,
+                temperature=0.0,
+                model_name=ocr_config.model,
+            ).with_structured_output(OCRData)
+        case GeminiAiConfig():
+            client = ChatGoogleGenerativeAI(
+                api_key=ocr_config.api_key,
+                temperature=0.0,
+                model=ocr_config.model,
+            ).with_structured_output(OCRData)
+
+    logger.debug(f"Creating client {client}")
+
+    print(f"\nUsing {ocr_config} for OCR extraction\n")
+    
+    return client
+
 async def extract_from_encoding_async(base64_image: str) -> List[dict]:
     """
     Extracts names and addresses from single ballot image asynchronously.
@@ -126,13 +174,7 @@ async def extract_from_encoding_async(base64_image: str) -> List[dict]:
 
     try:
         # open AI client definition 
-        client = ChatOpenAI(api_key=OPENAI_API_KEY,
-                          temperature=0.0,
-                   openai_api_base="https://oai.helicone.ai/v1", 
-                   model="gpt-4o-mini",
-                   default_headers={  # Optionally set default headers or set per request (see below)
-                              "Helicone-Auth": f"Bearer {HELICONE_PERSONAL_API_KEY}", }
-                              ).with_structured_output(OCRData)
+        client = create_ocr_client()
         # prompt message
         messages = [
                   {
