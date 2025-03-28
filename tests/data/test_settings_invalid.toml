@@ -3,7 +3,7 @@
 # Make a copy and save as "settings.toml". Then edit the copy.
 
 # Select the OCR engine to use from the list of available engines below
-selected_ocr_engine = "open_ai"
+selected_ocr_engine = "invalid_selection"
 
 # Credentials for the OCR engines
 [open_ai]
@@ -17,6 +17,3 @@ api_key = "Your Mistral API key"
 [gemini_ai]
 model = "default"
 api_key = "Your Gemini API key"
-
-# Debugging
-debug_mode = false
