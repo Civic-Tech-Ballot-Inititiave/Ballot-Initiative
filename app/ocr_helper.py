@@ -119,7 +119,7 @@ def collecting_pdf_encoded_images(file_path : str) -> List[str]:
     return encoded_image_list
 
 
-def create_ocr_client() ->  Runnable:
+def create_ocr_client() -> Runnable:
     """
     Create an OpenAI client with the appropriate settings.
 

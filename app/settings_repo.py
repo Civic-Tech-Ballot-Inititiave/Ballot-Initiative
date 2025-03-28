@@ -22,8 +22,11 @@ class GeminiAiConfig:
 @dataclass
 class SettingsData:
     selected_config: OpenAiConfig | MistralAiConfig | GeminiAiConfig
+    debug_mode: bool = False
 
-def load_settings(custom_path: str=None) -> SettingsData:
+_current_settings: Optional[SettingsData] = None
+
+def load_settings(custom_path: str=None, reload_settings: bool = False) -> SettingsData:
 
     """
     Load settings from a TOML file and return the selected OCR engine configuration.
@@ -38,6 +41,13 @@ def load_settings(custom_path: str=None) -> SettingsData:
     Raises:
         ValueError: If the selected engine is not found in the settings file.
     """
+
+    # If settings are already loaded and reload is not requested, return the current settings
+    global _current_settings
+
+    if (_current_settings) and (not reload_settings):
+        return _current_settings
+    
 
     # If custom path is provided, use it
     path = "./settings.toml"
@@ -54,10 +64,14 @@ def load_settings(custom_path: str=None) -> SettingsData:
 
     match selected_engine:
         case "open_ai":
-            return SettingsData(OpenAiConfig(api_key=engine_config["api_key"], model=engine_config["model"], helicone_api_key=engine_config.get("helicone_api_key")))
+            _current_settings = SettingsData(selected_config=OpenAiConfig(api_key=engine_config["api_key"], model=engine_config["model"], helicone_api_key=engine_config.get("helicone_api_key")))
         case "mistral_ai":
-            return SettingsData(MistralAiConfig(api_key=engine_config["api_key"], model=engine_config["model"]))
+            _current_settings = SettingsData(selected_config=MistralAiConfig(api_key=engine_config["api_key"], model=engine_config["model"]))
         case "gemini_ai":
-            return SettingsData(GeminiAiConfig(api_key=engine_config["api_key"], model=engine_config["model"]))
+            _current_settings = SettingsData(selected_config=GeminiAiConfig(api_key=engine_config["api_key"], model=engine_config["model"]))
         case _:
             raise ValueError(f"Could not find configuration for {selected_engine}. Please check your settings file.")
+    
+    _current_settings.debug_mode = settings.get("debug_mode", False)
+
+    return _current_settings
