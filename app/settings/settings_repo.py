@@ -2,6 +2,7 @@ from typing import Optional
 import tomllib
 import pathlib
 from dataclasses import dataclass
+from utils import * 
 
 @dataclass
 class OpenAiConfig:
@@ -61,6 +62,8 @@ def load_settings(custom_path: str=None, reload_settings: bool = False) -> Setti
     
     selected_engine = settings["selected_ocr_engine"]
     engine_config = settings.get(selected_engine)
+    is_debug_mode = settings.get("debug_mode", False)
+    enable_debug_logging(is_debug_mode)
 
     match selected_engine:
         case "open_ai":
@@ -74,4 +77,7 @@ def load_settings(custom_path: str=None, reload_settings: bool = False) -> Setti
     
     _current_settings.debug_mode = settings.get("debug_mode", False)
 
+    logger.debug(f"Loaded settings: {_current_settings}")
+    logger.info("Selected OCR engine {x} with model {y}:".format(x=selected_engine, y=engine_config["model"]))
+    
     return _current_settings
