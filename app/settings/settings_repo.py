@@ -9,7 +9,6 @@ from utils import *
 class OpenAiConfig:
     api_key: str
     model: str
-    helicone_api_key: Optional[str] = None
 
 
 @dataclass
@@ -77,7 +76,6 @@ def load_settings(
                 selected_config=OpenAiConfig(
                     api_key=engine_config["api_key"],
                     model=engine_config["model"],
-                    helicone_api_key=engine_config.get("helicone_api_key"),
                 )
             )
         case "mistral_ai":

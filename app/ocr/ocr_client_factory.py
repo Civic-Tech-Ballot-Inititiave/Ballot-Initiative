@@ -47,9 +47,6 @@ def _create_ocr_client() -> Runnable:
                 temperature=0.0,
                 openai_api_base="https://oai.helicone.ai/v1",
                 model=ocr_config.model,
-                default_headers={  # Optionally set default headers or set per request (see below)
-                    "Helicone-Auth": f"Bearer {ocr_config.helicone_api_key}",
-                },
             ).with_structured_output(OCRData)
         case MistralAiConfig():
             client = ChatMistralAI(
