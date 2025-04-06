@@ -7,7 +7,12 @@ from langchain_core.runnables import (
 )
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
-from settings import *
+from settings import (
+    load_settings,
+    OpenAiConfig,
+    MistralAiConfig,
+    GeminiAiConfig,
+)
 from utils.app_logger import logger
 import json
 

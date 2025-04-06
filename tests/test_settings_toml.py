@@ -1,4 +1,3 @@
-import pytest
 import tomllib
 
 # We're using the example file as our test input

@@ -1,5 +1,5 @@
 import pytest
-from app.settings import *
+from app.settings import load_settings, OpenAiConfig, MistralAiConfig, GeminiAiConfig
 
 
 def test_open_ai_selected_config():
@@ -43,14 +43,14 @@ def test_load_settings_with_debug_mode_enabled():
     settings = load_settings(
         "tests/data/test_settings_debug_enabled.toml", reload_settings=True
     )
-    assert settings.debug_mode
+    assert settings.debug_mode is True
 
 
-def test_load_settings_with_debug_mode_enabled():
+def test_load_settings_with_debug_mode_not_enabled():
     settings = load_settings(
         "tests/data/test_settings_default.toml", reload_settings=True
     )
-    assert settings.debug_mode == False
+    assert settings.debug_mode is False
 
 
 def test_return_same_settings_if_no_reload():

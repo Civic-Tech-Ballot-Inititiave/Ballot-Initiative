@@ -9,6 +9,7 @@ maintainers = [
     { name = "Mobolaji Williams" },
     { name = "Andrew Shao" },
     { name = "Kurian Vithayathil" },
+    { name = "Kevin Shu" },
 ]
 license = "MIT"
 dependencies = [
@@ -39,9 +40,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=25.1.0",
- "flake8>=7.2.0",
- "pytest>=8.3.5",
- "pytest-cov>=6.1.1",
+    "flake8>=7.2.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
+    "ruff>=0.11.4",
 ]
 
 [build-system]
@@ -55,3 +57,7 @@ packages = ["app"]
 testpaths = ["tests"]
 pythonpath = "app"
 addopts = ["--import-mode=importlib"]
+
+
+[tool.ruff]
+exclude = ["notebooks", "cross_referencing_tests"]

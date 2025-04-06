@@ -5,6 +5,8 @@
 # Select the OCR engine to use from the list of available engines below
 selected_ocr_engine = "open_ai"
 
+debug_mode = true
+
 # Credentials for the OCR engines
 [open_ai]
 model = "default" # Uses default model defined within the OCR processor. Can be overridden by the user.

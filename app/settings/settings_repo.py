@@ -2,7 +2,10 @@ from typing import Optional
 import tomllib
 import pathlib
 from dataclasses import dataclass
-from utils import *
+from utils import (
+    enable_debug_logging,
+    logger,
+)
 
 
 @dataclass
