@@ -81,13 +81,15 @@ def load_settings(
         case "mistral_ai":
             _current_settings = SettingsData(
                 selected_config=MistralAiConfig(
-                    api_key=engine_config["api_key"], model=engine_config["model"]
+                    api_key=engine_config["api_key"],
+                    model=engine_config["model"],
                 )
             )
         case "gemini_ai":
             _current_settings = SettingsData(
                 selected_config=GeminiAiConfig(
-                    api_key=engine_config["api_key"], model=engine_config["model"]
+                    api_key=engine_config["api_key"],
+                    model=engine_config["model"],
                 )
             )
         case _:
