@@ -37,7 +37,12 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["black>=25.1.0", "pytest>=8.3.5", "pytest-cov>=6.1.1"]
+dev = [
+    "black>=25.1.0",
+ "flake8>=7.2.0",
+ "pytest>=8.3.5",
+ "pytest-cov>=6.1.1",
+]
 
 [build-system]
 requires = ["setuptools >= 77.0.3"]
