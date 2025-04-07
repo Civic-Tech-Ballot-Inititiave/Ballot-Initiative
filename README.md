@@ -40,7 +40,7 @@ The goal of the Ballot Initiative project is to reduce the manual labor involved
 
 ![Core Algorithm](app/ballot_initiative_schematic.png)
 
-1. **Extraction:** Forms in PDF format are processed through an OCR engine (using [gpt-4o-mini](https://platform.openai.com/docs/models/gpt-4o-mini)) to crop text sections and extract data.
+1. **Extraction:** Forms in PDF format are processed through an OCR engine (using generative AI) to crop text sections and extract data.
 
 2. **Identification:** The engine identifies and extracts key information (tailored to DC Ballot Initiatives) related to validating signatures:
 
@@ -63,10 +63,14 @@ An alternate approach to get up and running is to use [Github Codespaces](https:
 
 ### Prerequisites
 
-- Python 3.12
-- OpenAI API key[^1]
+- [Python 3.12+](https://wiki.python.org/moin/BeginnersGuide/Download)
+- [UV](https://docs.astral.sh/uv/getting-started/installation/) for building the project
+- API keys for at least one of the following[^1]:
+  - [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key)
+  - [Mistral API key](https://docs.mistral.ai/getting-started/quickstart/)
+  - [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key)
 
-[^1]: The OpenAI free tier has a low rate limit. To increase the rate limit, you'll have to have a form payment on your OpenAI account. [See this page for details](https://platform.openai.com/docs/guides/rate-limits?tier=tier-one)
+[^1]: The free tiers for these services typically have a low rate limit that can cause issues. Many services require adding a payment method to your account to increase rate limits. Please verify your account settings and usage limits before running the application.
 
 - PDF files of ballot initiative signatures
   - Use fake data in [`sample_data/fake_signed_petitions.pdf`](sample_data/fake_signed_petitions.pdf) folder to test.
@@ -86,8 +90,8 @@ cd ballot-initiative
 2. Create and activate a virtual environment:
 
 ```bash
-# Create virtual environment
-python -m venv venv
+# Initalise project and install dependencies
+uv sync --all-extras --dev
 
 # Activate virtual environment
 # On Windows:
@@ -96,28 +100,19 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-3. Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Set up your environment:
-   - Create a `.env` file in the project root folder.
-   - Replicate the format shown in the `.env.example` file.
-   - [Get an OpenAI API key](https://www.howtogeek.com/885918/how-to-get-an-openai-api-key/) if you don't have one
-   - Add your OpenAI API key to the `.env` file:
-     ```
-     OPENAI_API_KEY=<YOUR_API_KEY>
-     ```
+3. Configure and save settings:
+   - Make a copy of the `settings.example.toml` file and rename it to `settings.toml`.
+   - Add your GenAI API keys to the `api_key` field of the selected model
+   - Add the name of the model to the `model` field e.g. `mistral-small-latest` or `gpt-4o-mini`
 
 ### Running the Application
 
 1. Start the Streamlit app:
 
 ```bash
-streamlit run app/Home.py
+uv run main.py
 ```
+
 
 2. Upload your files:
    - PDF of signed petitions
@@ -131,7 +126,7 @@ streamlit run app/Home.py
 3. Run the following command:
 
 ```bash
-python pytest
+uv run pytest
 ```
 
 ## Project Documentation
