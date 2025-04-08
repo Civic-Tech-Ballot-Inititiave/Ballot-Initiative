@@ -1,0 +1,63 @@
+[project]
+name = "ballot-petition-signature-verifier"
+version = "0.0.9"
+description = "A python package for verifying ballot petition signatures"
+readme = "README.md"
+requires-python = "~=3.12"
+authors = [{ name = "Mobolaji Williams" }]
+maintainers = [
+    { name = "Mobolaji Williams" },
+    { name = "Andrew Shao" },
+    { name = "Kurian Vithayathil" },
+    { name = "Kevin Shu" },
+]
+license = "MIT"
+dependencies = [
+    "httpx>=0.28.1",
+    "ipywidgets>=8.1.5",
+    "langchain-core>=0.3.51",
+    "langchain-google-genai>=2.1.2",
+    "langchain-mistralai>=0.2.10",
+    "langchain-openai>=0.3.12",
+    "loguru>=0.7.3",
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.4",
+    "pandas>=2.2.3",
+    "pillow>=11.1.0",
+    "pydantic>=2.11.2",
+    "pymupdf>=1.25.5",
+    "rapidfuzz>=3.13.0",
+    "requests>=2.32.3",
+    "scikit-learn>=1.6.1",
+    "streamlit>=1.44.1",
+    "streamlit-shadcn-ui>=0.1.18",
+    "structlog>=25.2.0",
+    "tomli>=2.2.1",
+    "tomli-w>=1.2.0",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "flake8>=7.2.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
+    "ruff>=0.11.4",
+]
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = "app"
+addopts = ["--import-mode=importlib"]
+
+
+[tool.ruff]
+exclude = ["notebooks", "cross_referencing_tests"]

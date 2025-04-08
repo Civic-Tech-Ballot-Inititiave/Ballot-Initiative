@@ -17,6 +17,3 @@ api_key = "Your Mistral API key"
 [gemini_ai]
 model = "default"
 api_key = "Your Gemini API key"
-
-# Debugging
-debug_mode = false

@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import re
-import pdb
 import time
 
 # Scanned file should have a combination of Full Name, (full) Street Address
