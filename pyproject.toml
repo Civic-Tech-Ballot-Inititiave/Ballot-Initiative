@@ -13,6 +13,7 @@ maintainers = [
 ]
 license = "MIT"
 dependencies = [
+    "dotenv>=0.9.9",
     "httpx>=0.28.1",
     "ipywidgets>=8.1.5",
     "langchain-core>=0.3.51",

@@ -64,7 +64,7 @@ An alternate approach to get up and running is to use [Github Codespaces](https:
 ### Prerequisites
 
 - [Python 3.12+](https://wiki.python.org/moin/BeginnersGuide/Download)
-- [UV](https://docs.astral.sh/uv/getting-started/installation/) for building the project
+- [UV](https://docs.astral.sh/uv/getting-started/installation/) for building the project and dependency management.
 - API keys for at least one of the following[^1]:
   - [OpenAI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key)
   - [Mistral API key](https://docs.mistral.ai/getting-started/quickstart/)
@@ -85,7 +85,8 @@ An alternate approach to get up and running is to use [Github Codespaces](https:
 git clone https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative.git
 cd ballot-initiative
 ```
-  [^2]: Optionally you may want to [fork this repository](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/fork)
+
+[^2]: Optionally you may want to [fork this repository](https://github.com/Civic-Tech-Ballot-Inititiave/Ballot-Initiative/fork)
 
 2. Create and activate a virtual environment:
 
@@ -112,7 +113,6 @@ source venv/bin/activate
 ```bash
 uv run main.py
 ```
-
 
 2. Upload your files:
    - PDF of signed petitions
