@@ -84,16 +84,6 @@ def load_settings(
     if (_current_settings) and (not reload_settings):
         return _current_settings
 
-    # If custom path is provided, use it
-    path = "./settings.toml"
-    if custom_path:
-        path = custom_path
-
-    file = pathlib.Path(path)
-
-    with open(file, "rb") as f:
-        settings = tomllib.load(f)
-
     selected_engine: str
     model: str
     api_key: str
@@ -105,8 +95,13 @@ def load_settings(
         api_key = os.getenv("DEMO_GENAI_API_KEY")
         model = os.getenv("DEMO_GENAI_MODEL_NAME")
     else:
+        # If custom path is provided, use it
+        path = "./settings.toml"
+        if custom_path:
+            path = custom_path
+
         # Load settings from the TOML file
-        settings = __load_settings_file(custom_path)
+        settings = __load_settings_file(path)
         selected_engine = settings["selected_ocr_engine"]
         api_key = settings.get(selected_engine, {}).get("api_key", "")
         model = settings.get(selected_engine, {}).get("model", "")
