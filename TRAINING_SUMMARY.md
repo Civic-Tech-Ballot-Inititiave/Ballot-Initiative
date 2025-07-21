@@ -207,8 +207,4 @@ data:
 For questions or issues with the CRNN model:
 1. Check `app/ocr/README_CRNN.md` for detailed documentation
 2. Run `python tests/test_trained_model.py` to verify model functionality
-3. Review training logs for debugging information
-
----
-
-**Training completed successfully! The CRNN model is ready for deployment.** 
+3. Review training logs for debugging information 
