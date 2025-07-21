@@ -45,26 +45,25 @@ def _create_ocr_client() -> Runnable:
 
     client: Runnable = None
 
-    match ocr_config:
-        case OpenAiConfig():
-            client = ChatOpenAI(
-                api_key=ocr_config.api_key,
-                temperature=1,
-                openai_api_base="https://oai.helicone.ai/v1",
-                model=ocr_config.model,
-            ).with_structured_output(OCRData)
-        case MistralAiConfig():
-            client = ChatMistralAI(
-                api_key=ocr_config.api_key,
-                temperature=0.0,
-                model_name=ocr_config.model,
-            ).with_structured_output(OCRData)
-        case GeminiAiConfig():
-            client = ChatGoogleGenerativeAI(
-                api_key=ocr_config.api_key,
-                temperature=0.0,
-                model=ocr_config.model,
-            ).with_structured_output(OCRData)
+    if isinstance(ocr_config, OpenAiConfig):
+        client = ChatOpenAI(
+            api_key=ocr_config.api_key,
+            temperature=1,
+            openai_api_base="https://oai.helicone.ai/v1",
+            model=ocr_config.model,
+        ).with_structured_output(OCRData)
+    elif isinstance(ocr_config, MistralAiConfig):
+        client = ChatMistralAI(
+            api_key=ocr_config.api_key,
+            temperature=0.0,
+            model_name=ocr_config.model,
+        ).with_structured_output(OCRData)
+    elif isinstance(ocr_config, GeminiAiConfig):
+        client = ChatGoogleGenerativeAI(
+            api_key=ocr_config.api_key,
+            temperature=0.0,
+            model=ocr_config.model,
+        ).with_structured_output(OCRData)
 
     logger.debug(f"Creating client {ocr_config}")
 

@@ -1,5 +1,8 @@
-from typing import Optional
-import tomllib
+from typing import Optional, Union
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
 import pathlib
 from dataclasses import dataclass
 from utils import (
@@ -30,7 +33,7 @@ class GeminiAiConfig:
 
 @dataclass
 class SettingsData:
-    selected_config: OpenAiConfig | MistralAiConfig | GeminiAiConfig
+    selected_config: Union[OpenAiConfig, MistralAiConfig, GeminiAiConfig]
     debug_mode: bool = False
 
 
@@ -75,32 +78,31 @@ def load_settings(
     is_debug_mode = settings.get("debug_mode", False)
     enable_debug_logging(is_debug_mode)
 
-    match selected_engine:
-        case "open_ai":
-            _current_settings = SettingsData(
-                selected_config=OpenAiConfig(
-                    api_key=engine_config["api_key"],
-                    model=engine_config["model"],
-                )
+    if selected_engine == "open_ai":
+        _current_settings = SettingsData(
+            selected_config=OpenAiConfig(
+                api_key=engine_config["api_key"],
+                model=engine_config["model"],
             )
-        case "mistral_ai":
-            _current_settings = SettingsData(
-                selected_config=MistralAiConfig(
-                    api_key=engine_config["api_key"],
-                    model=engine_config["model"],
-                )
+        )
+    elif selected_engine == "mistral_ai":
+        _current_settings = SettingsData(
+            selected_config=MistralAiConfig(
+                api_key=engine_config["api_key"],
+                model=engine_config["model"],
             )
-        case "gemini_ai":
-            _current_settings = SettingsData(
-                selected_config=GeminiAiConfig(
-                    api_key=engine_config["api_key"],
-                    model=engine_config["model"],
-                )
+        )
+    elif selected_engine == "gemini_ai":
+        _current_settings = SettingsData(
+            selected_config=GeminiAiConfig(
+                api_key=engine_config["api_key"],
+                model=engine_config["model"],
             )
-        case _:
-            raise ValueError(
-                f"Could not find configuration for {selected_engine}. Please check your settings file."
-            )
+        )
+    else:
+        raise ValueError(
+            f"Could not find configuration for {selected_engine}. Please check your settings file."
+        )
 
     _current_settings.debug_mode = settings.get("debug_mode", False)
 

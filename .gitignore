@@ -196,6 +196,18 @@ cython_debug/
 
 # custome ignore
 source_pdfs
+
+# CRNN Model files (large binary files)
+models/*.pth
+models/*.pt
+models/*.ckpt
+
+# Training data (large files)
+data/processed/
+data/raw/
+
+# Generated training data
+generate_training_data.py
 ### Linux ###
 *~
 

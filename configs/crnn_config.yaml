@@ -1,0 +1,37 @@
+# CRNN Training Configuration
+
+model:
+  img_height: 32
+  img_width: 128
+  num_classes: 80  # depends on charset
+  hidden_size: 256
+  num_layers: 2
+  dropout: 0.5
+
+training:
+  batch_size: 32
+  epochs: 50
+  learning_rate: 0.001
+  optimizer: adam
+  checkpoint_dir: "models"
+
+data:
+  train_dir: "data/processed/train"
+  val_dir: "data/processed/val"
+  charset_path: "data/charset.txt"
+
+# Optional: Advanced training settings
+advanced:
+  early_stopping_patience: 10
+  learning_rate_scheduler: true
+  gradient_clipping: 5.0
+  weight_decay: 0.0001
+
+# Data augmentation settings
+augmentation:
+  enabled: true
+  rotation_range: 5
+  width_shift_range: 0.1
+  height_shift_range: 0.1
+  zoom_range: 0.1
+  shear_range: 0.1 

@@ -159,3 +159,9 @@ wcwidth==0.2.13
 websockets==15.0.1
 widgetsnbextension==4.0.13
 zstandard==0.23.0
+
+# PyTorch and related dependencies for CRNN model
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+pyyaml>=6.0.0
