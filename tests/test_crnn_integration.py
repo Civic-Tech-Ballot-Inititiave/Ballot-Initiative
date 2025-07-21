@@ -11,7 +11,8 @@ import sys
 from pathlib import Path
 
 # Add app directory to path
-sys.path.append(str(Path(__file__).parent / "app"))
+sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent / "app"))
 
 from ocr.crnn_inference import predict_ballot_text, BallotTextExtractor
 from ocr.hybrid_ocr_client import create_hybrid_ocr_client

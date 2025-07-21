@@ -21,7 +21,10 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from crnn_inference import CRNN, CTCDecoder
+try:
+    from crnn_inference import CRNN, CTCDecoder
+except ImportError:
+    from app.ocr.crnn_inference import CRNN, CTCDecoder
 from utils.app_logger import logger
 
 
